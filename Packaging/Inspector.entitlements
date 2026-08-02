@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>application-identifier</key>
+	<string>wiki.qaq.Inspector</string>
+	<key>com.apple.private.security.no-sandbox</key>
+	<true/>
+	<key>com.apple.system-task-ports.read</key>
+	<true/>
+	<key>platform-application</key>
+	<true/>
+	<key>proc_info-allow</key>
+	<true/>
+	<key>task_for_pid-allow</key>
+	<true/>
+</dict>
+</plist>

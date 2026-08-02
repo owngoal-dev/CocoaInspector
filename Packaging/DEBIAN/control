@@ -1,0 +1,11 @@
+Package: @PACKAGE_ID@
+Name: Inspector
+Version: @VERSION@
+Architecture: @ARCHITECTURE@
+Description: Cocoa process inspector for Relaxin
+Maintainer: qaq <me@qaq.wiki>
+Author: qaq
+Section: Utilities
+Priority: optional
+Depends: firmware (>= 17.0)
+Installed-Size: @INSTALLED_SIZE@

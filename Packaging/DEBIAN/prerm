@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if [ "${1:-}" = remove ] || [ "${1:-}" = deconfigure ]; then
+    uicache=/var/jb/usr/bin/uicache
+    if [ ! -x "$uicache" ]; then
+        uicache=/usr/bin/uicache
+    fi
+    if [ -x "$uicache" ]; then
+        "$uicache" -u wiki.qaq.Inspector || true
+    fi
+fi
+
+exit 0

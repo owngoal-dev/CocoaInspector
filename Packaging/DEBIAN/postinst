@@ -1,0 +1,11 @@
+#!/bin/sh
+
+uicache=/var/jb/usr/bin/uicache
+if [ ! -x "$uicache" ]; then
+    uicache=/usr/bin/uicache
+fi
+if [ -x "$uicache" ]; then
+    "$uicache" -p /var/jb/Applications/Inspector.app || true
+fi
+
+exit 0
