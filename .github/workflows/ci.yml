@@ -44,7 +44,9 @@ jobs:
           fi
 
       - name: Build rootless Debian package
-        run: make deb CONFIGURATION=Release DERIVED_DATA="$DERIVED_DATA"
+        run: |
+          xcodebuild -version
+          make deb CONFIGURATION=Release DERIVED_DATA="$DERIVED_DATA"
 
       - name: Verify Debian package
         shell: bash

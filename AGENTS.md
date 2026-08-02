@@ -12,3 +12,4 @@
 - Keep CI on the same `self-hosted`, `macos`, `arm64`, `mini-control` runner pool as Relaxin, and publish only the verified rootless Debian package plus its checksum as workflow artifacts.
 - Guard CI cleanup with an explicit runner-temporary-directory prefix before recursively removing derived data.
 - Resolve runner-scoped paths from `RUNNER_TEMP` inside a step; the `runner` expression context is unavailable while GitHub validates job-level environment values.
+- Keep the Xcode project at object version 77 while the custom runner image cannot read Xcode 27's object version 110.
