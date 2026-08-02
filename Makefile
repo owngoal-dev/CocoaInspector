@@ -36,7 +36,7 @@ ifeq ($(APP_VERSION),)
 $(error MARKETING_VERSION is missing from Inspector.xcodeproj)
 endif
 
-.PHONY: all help check build deb clean
+.PHONY: all help print-version print-deb-path check build deb clean
 
 all: deb
 
@@ -46,6 +46,12 @@ help:
 	@echo "  deb     Build, ad-hoc sign, and package the rootless .deb"
 	@echo "  check   Validate the Xcode project and packaging inputs"
 	@echo "  clean   Remove Inspector derived data and generated packages"
+
+print-version:
+	@echo "$(APP_VERSION)"
+
+print-deb-path:
+	@echo "$(DEB_OUTPUT)"
 
 check:
 	@command -v xcodebuild >/dev/null || { echo "error: xcodebuild is required" >&2; exit 69; }

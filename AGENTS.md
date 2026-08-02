@@ -9,3 +9,5 @@
 - Keep private entitlements minimal and add a capability only when an implemented collector requires it.
 - Keep validation artifacts outside the Debian staging root so temporary metadata cannot leak into the installed filesystem.
 - Normalize the Debian staging root to mode 0755; `mktemp -d` creates 0700 and that mode otherwise appears in `data.tar`.
+- Keep CI on the same `self-hosted`, `macos`, `arm64`, `mini-control` runner pool as Relaxin, and publish only the verified rootless Debian package plus its checksum as workflow artifacts.
+- Guard CI cleanup with an explicit runner-temporary-directory prefix before recursively removing derived data.
