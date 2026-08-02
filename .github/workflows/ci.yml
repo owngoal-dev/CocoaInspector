@@ -19,10 +19,14 @@ jobs:
     name: Build and verify Debian package
     runs-on: [self-hosted, macos, arm64, mini-control]
     timeout-minutes: 30
-    env:
-      DERIVED_DATA: ${{ runner.temp }}/cocoa-inspector-${{ github.run_id }}-${{ github.run_attempt }}
 
     steps:
+      - name: Configure build paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "DERIVED_DATA=$RUNNER_TEMP/cocoa-inspector-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
+
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -83,7 +87,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          case "$DERIVED_DATA" in
-            "$RUNNER_TEMP"/cocoa-inspector-*) rm -rf -- "$DERIVED_DATA" ;;
-            *) echo "error: refusing to remove unexpected path: $DERIVED_DATA" >&2; exit 64 ;;
+          derived_data="${DERIVED_DATA:-}"
+          case "$derived_data" in
+            "$RUNNER_TEMP"/cocoa-inspector-*) rm -rf -- "$derived_data" ;;
+            *) echo "error: refusing to remove unexpected path: $derived_data" >&2; exit 64 ;;
           esac
