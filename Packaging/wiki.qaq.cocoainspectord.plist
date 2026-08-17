@@ -6,7 +6,7 @@
 	<string>wiki.qaq.cocoainspectord</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/usr/libexec/cocoainspectord</string>
+		<string>@PREFIX@/usr/libexec/cocoainspectord</string>
 	</array>
 	<key>UserName</key>
 	<string>root</string>

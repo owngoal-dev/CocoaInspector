@@ -1,6 +1,6 @@
 # CocoaInspector
 
-Live process inspector for [roothide](https://github.com/roothide) jailbroken iOS.
+Live process inspector for jailbroken iOS — [roothide](https://github.com/roothide) and rootless (`/var/jb`).
 
 SwiftUI app (`Inspector/`), root LaunchDaemon (`CocoaInspectord/`), CLI (`CocoaInspectorCLI/`), and a shared XPC data layer (`Shared/`, `InspectorClient/`). The daemon samples only while an authenticated client holds a foreground lease. Clients can list processes, open per-process detail views, export snapshots, and send two-phase `SIGTERM` / `SIGKILL`.
 
@@ -12,17 +12,26 @@ License: [MIT](LICENSE).
 
 - macOS with Xcode 16 or newer (iOS 17 SDK); CI builds on the `macos-26` GitHub-hosted runner
 - `ldid`, `dpkg-deb` (for packaging)
-- A roothide jailbroken device to install and run the package
+- A jailbroken device to install and run the package: roothide, or a rootless jailbreak that installs under `/var/jb`
 
 ## Build
 
 ```sh
-make build    # check + macOS harness + unsigned iOS targets
-make deb      # build, ad-hoc sign, package iphoneos-arm64e .deb
-make harness  # shared data-layer tests on macOS only
+make build         # check + macOS harness + unsigned iOS targets
+make deb           # build, ad-hoc sign, package the roothide .deb (FLAVOR=roothide)
+make deb FLAVOR=rootless   # the same build, packaged for /var/jb
+make deb-all       # both packages
+make harness       # shared data-layer tests on macOS only
 ```
 
-`make deb` writes the package under `build/Packages`. Path helper: `make print-deb-path`.
+Both flavors ship the identical arm64 Mach-Os; only the install layout differs.
+
+| FLAVOR | Architecture | Install prefix |
+| --- | --- | --- |
+| `roothide` (default) | `iphoneos-arm64e` | none — roothide's dpkg relocates into the randomized bootstrap root |
+| `rootless` | `iphoneos-arm64` | `/var/jb` |
+
+`make deb` writes the package under `build/Packages` and verifies its layout with `Scripts/verify-deb.sh`. Path helper: `make print-deb-path [FLAVOR=rootless]`.
 
 Optional local signing overrides go in git-ignored `Configuration/Developer*.xcconfig` (see `Configuration/Developer.xcconfig.example`).
 
@@ -35,11 +44,11 @@ make print-version
 make set-version VERSION=1.2.3 BUILD=7
 ```
 
-Pushing a `vX.Y.Z` tag makes CI apply that version, build the package, and publish a GitHub release with `SHA256SUMS`.
+Pushing a `vX.Y.Z` tag makes CI apply that version, build both packages, and publish a GitHub release with `SHA256SUMS`.
 
 ## Install & verify
 
-Install the `.deb` with your roothide package manager or `dpkg`. The archive contains `Inspector.app`, `/usr/bin/cocoainspector`, `/usr/libexec/cocoainspectord`, and an on-demand LaunchDaemon plist. Paths under `/Applications`, `/usr`, and `/Library` are mapped into the randomized jailbreak root by the bootstrap.
+Install the `.deb` matching your jailbreak (`iphoneos-arm64e` for roothide, `iphoneos-arm64` for rootless) with your package manager or `dpkg`. The archive contains `Inspector.app`, `usr/bin/cocoainspector`, `usr/libexec/cocoainspectord`, and an on-demand LaunchDaemon plist. On roothide those rootful paths are mapped into the randomized jailbreak root by the bootstrap; on rootless they ship under `/var/jb`. The daemon derives the install root from its own path, so client authentication works in both layouts.
 
 ```sh
 sudo cocoainspector self-test

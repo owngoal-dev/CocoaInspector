@@ -2,7 +2,7 @@ Package: @PACKAGE_ID@
 Name: Inspector
 Version: @VERSION@
 Architecture: @ARCHITECTURE@
-Description: Live process inspector for roothide
+Description: Live process inspector for @FLAVOR@ jailbreaks
  Inspector samples every process on the device once a second and shows what the system is really doing.
  .
  ### Process list

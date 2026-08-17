@@ -2,8 +2,8 @@
 
 set -Eeuo pipefail
 
-if [[ "$#" -ne 12 ]]; then
-    echo "usage: $0 <app> <daemon> <cli> <control> <app-entitlements> <daemon-entitlements> <cli-entitlements> <launch-plist> <output-deb> <package-id> <version> <architecture>" >&2
+if [[ "$#" -ne 14 ]]; then
+    echo "usage: $0 <app> <daemon> <cli> <control> <app-entitlements> <daemon-entitlements> <cli-entitlements> <launch-plist> <output-deb> <package-id> <version> <architecture> <flavor> <install-prefix>" >&2
     exit 64
 fi
 
@@ -19,6 +19,8 @@ output_deb="$9"
 package_id="${10}"
 version="${11}"
 architecture="${12}"
+flavor="${13}"
+install_prefix="${14}"
 
 [[ -d "$app_bundle" && -f "$app_bundle/Info.plist" ]] || { echo "error: incomplete app bundle" >&2; exit 66; }
 [[ -x "$daemon_binary" ]] || { echo "error: daemon binary is missing" >&2; exit 66; }
@@ -30,6 +32,11 @@ done
 [[ "$package_id" =~ ^[a-z0-9][a-z0-9+.-]+$ ]] || { echo "error: invalid package id" >&2; exit 64; }
 [[ "$version" =~ ^[0-9A-Za-z.+:~_-]+$ ]] || { echo "error: invalid version" >&2; exit 64; }
 [[ "$architecture" =~ ^[A-Za-z0-9][A-Za-z0-9-]+$ ]] || { echo "error: invalid architecture" >&2; exit 64; }
+case "$flavor" in
+    roothide) [[ -z "$install_prefix" ]] || { echo "error: roothide packages install at rootful paths" >&2; exit 64; } ;;
+    rootless) [[ "$install_prefix" == /var/jb ]] || { echo "error: rootless packages install under /var/jb" >&2; exit 64; } ;;
+    *) echo "error: flavor must be roothide or rootless" >&2; exit 64 ;;
+esac
 
 app_executable="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app_bundle/Info.plist")"
 bundle_identifier="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app_bundle/Info.plist")"
@@ -59,19 +66,23 @@ trap 'rm -rf "$staging"; rm -f "$temporary_deb" "$app_signed_entitlements" "$dae
 chmod 0755 "$staging"
 
 debian="$staging/DEBIAN"
-installed_app="$staging/Applications/Inspector.app"
-installed_daemon="$staging/usr/libexec/cocoainspectord"
-installed_cli="$staging/usr/bin/cocoainspector"
-installed_plist="$staging/Library/LaunchDaemons/wiki.qaq.cocoainspectord.plist"
+installed_app="$staging$install_prefix/Applications/Inspector.app"
+installed_daemon="$staging$install_prefix/usr/libexec/cocoainspectord"
+installed_cli="$staging$install_prefix/usr/bin/cocoainspector"
+installed_plist="$staging$install_prefix/Library/LaunchDaemons/wiki.qaq.cocoainspectord.plist"
 mkdir -p "$debian" "$(dirname "$installed_app")" "$(dirname "$installed_daemon")" "$(dirname "$installed_cli")" "$(dirname "$installed_plist")"
 /usr/bin/ditto "$app_bundle" "$installed_app"
 /usr/bin/ditto "$daemon_binary" "$installed_daemon"
 /usr/bin/ditto "$cli_binary" "$installed_cli"
-/usr/bin/ditto "$launch_plist" "$installed_plist"
+sed -e "s|@PREFIX@|$install_prefix|g" "$launch_plist" >"$installed_plist"
 rm -rf "$installed_app/_CodeSignature"
 rm -f "$installed_app/embedded.mobileprovision"
 chmod 0755 "$installed_daemon" "$installed_cli"
 chmod 0644 "$installed_plist"
+[[ "$(/usr/libexec/PlistBuddy -c 'Print :ProgramArguments:0' "$installed_plist")" == "$install_prefix/usr/libexec/cocoainspectord" ]] || {
+    echo "error: launch daemon plist does not point at the installed daemon" >&2
+    exit 65
+}
 
 ldid -S"$app_entitlements" -Cadhoc "$installed_app/$app_executable"
 ldid -S"$daemon_entitlements" -Cadhoc "$installed_daemon"
@@ -105,17 +116,20 @@ for entitlement in platform-application com.apple.private.security.no-sandbox co
     require_true "$daemon_signed_entitlements" "$entitlement"
 done
 
-installed_size="$(du -sk "$staging/Applications" "$staging/usr" "$staging/Library" | awk '{total += $1} END {print total}')"
+# DEBIAN is still empty at this point, so this measures only the payload.
+installed_size="$(du -sk "$staging" | awk '{print $1}')"
 sed \
     -e "s/@PACKAGE_ID@/$package_id/g" \
     -e "s/@VERSION@/$version/g" \
     -e "s/@ARCHITECTURE@/$architecture/g" \
     -e "s/@INSTALLED_SIZE@/$installed_size/g" \
+    -e "s/@FLAVOR@/$flavor/g" \
     "$control_template" >"$debian/control"
 
 packaging_root="$(cd "$(dirname "$control_template")/.." && pwd -P)"
-/usr/bin/ditto "$packaging_root/DEBIAN/postinst" "$debian/postinst"
-/usr/bin/ditto "$packaging_root/DEBIAN/prerm" "$debian/prerm"
+for script in postinst prerm; do
+    sed -e "s|@PREFIX@|$install_prefix|g" "$packaging_root/DEBIAN/$script" >"$debian/$script"
+done
 chmod 0644 "$debian/control"
 chmod 0755 "$debian/postinst" "$debian/prerm"
 
@@ -124,11 +138,11 @@ dpkg-deb --root-owner-group -Zzstd -b "$staging" "$temporary_deb"
 [[ "$(dpkg-deb -f "$temporary_deb" Version)" == "$version" ]]
 [[ "$(dpkg-deb -f "$temporary_deb" Architecture)" == "$architecture" ]]
 contents="$(dpkg-deb --contents "$temporary_deb")"
-grep -F './Applications/Inspector.app/Inspector' <<<"$contents" >/dev/null
-grep -F './usr/libexec/cocoainspectord' <<<"$contents" >/dev/null
-grep -F './usr/bin/cocoainspector' <<<"$contents" >/dev/null
-grep -F './Library/LaunchDaemons/wiki.qaq.cocoainspectord.plist' <<<"$contents" >/dev/null
+grep -F ".$install_prefix/Applications/Inspector.app/Inspector" <<<"$contents" >/dev/null
+grep -F ".$install_prefix/usr/libexec/cocoainspectord" <<<"$contents" >/dev/null
+grep -F ".$install_prefix/usr/bin/cocoainspector" <<<"$contents" >/dev/null
+grep -F ".$install_prefix/Library/LaunchDaemons/wiki.qaq.cocoainspectord.plist" <<<"$contents" >/dev/null
 
 mv -f "$temporary_deb" "$output_deb"
-echo "Packaged Inspector: $output_deb"
+echo "Packaged Inspector ($flavor): $output_deb"
 shasum -a 256 "$output_deb"

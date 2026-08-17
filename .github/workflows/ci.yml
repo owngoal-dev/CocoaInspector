@@ -60,26 +60,22 @@ jobs:
           set -euo pipefail
           ./Scripts/apply-version.sh "$GITHUB_REF_NAME" "$GITHUB_RUN_NUMBER"
 
-      - name: Build Debian package with Xcode
+      - name: Build Debian packages with Xcode
         run: |
           xcodebuild -version
-          make deb CONFIGURATION=Release DERIVED_DATA="$DERIVED_DATA"
+          make deb-all CONFIGURATION=Release DERIVED_DATA="$DERIVED_DATA"
 
-      - name: Verify Debian package
+      - name: Verify Debian packages
         shell: bash
         run: |
           set -euo pipefail
-          DEB_PATH="$(make --no-print-directory print-deb-path)"
+          VERSION="$(make --no-print-directory print-version)"
           APP_PATH="$DERIVED_DATA/Build/Products/Release-iphoneos/Inspector.app"
           DAEMON_PATH="$DERIVED_DATA/Build/Products/Release-iphoneos/cocoainspectord"
           CLI_PATH="$DERIVED_DATA/Build/Products/Release-iphoneos/cocoainspector"
-          test -f "$DEB_PATH"
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            test "$(make --no-print-directory print-version)" = "${GITHUB_REF_NAME#v}"
+            test "$VERSION" = "${GITHUB_REF_NAME#v}"
           fi
-          test "$(dpkg-deb -f "$DEB_PATH" Package)" = "wiki.qaq.inspector"
-          test "$(dpkg-deb -f "$DEB_PATH" Version)" = "$(make --no-print-directory print-version)"
-          test "$(dpkg-deb -f "$DEB_PATH" Architecture)" = "iphoneos-arm64e"
           test "$(lipo -archs "$APP_PATH/Inspector")" = "arm64"
           test "$(lipo -archs "$DAEMON_PATH")" = "arm64"
           test "$(lipo -archs "$CLI_PATH")" = "arm64"
@@ -88,28 +84,37 @@ jobs:
           test "$(sips -g pixelHeight "$APP_PATH/AppIcon60x60@2x.png" 2>/dev/null | awk '/pixelHeight:/ {print $2}')" = "120"
           test "$(sips -g pixelWidth "$APP_PATH/AppIcon76x76@2x~ipad.png" 2>/dev/null | awk '/pixelWidth:/ {print $2}')" = "152"
           test "$(sips -g pixelHeight "$APP_PATH/AppIcon76x76@2x~ipad.png" 2>/dev/null | awk '/pixelHeight:/ {print $2}')" = "152"
-          dpkg-deb --contents "$DEB_PATH" | grep -F './Applications/Inspector.app/Inspector'
-          dpkg-deb --contents "$DEB_PATH" | grep -F './Applications/Inspector.app/AppIcon60x60@2x.png'
-          dpkg-deb --contents "$DEB_PATH" | grep -F './Applications/Inspector.app/AppIcon76x76@2x~ipad.png'
-          dpkg-deb --contents "$DEB_PATH" | grep -F './usr/libexec/cocoainspectord'
-          dpkg-deb --contents "$DEB_PATH" | grep -F './usr/bin/cocoainspector'
-          dpkg-deb --contents "$DEB_PATH" | grep -F './Library/LaunchDaemons/wiki.qaq.cocoainspectord.plist'
-          dpkg-deb --info "$DEB_PATH"
-          dpkg-deb --contents "$DEB_PATH"
-          DEB_NAME="$(basename "$DEB_PATH")"
-          DEB_SIZE="$(stat -f '%z' "$DEB_PATH")"
-          DEB_SHA256="$(shasum -a 256 "$DEB_PATH" | awk '{print $1}')"
-          printf '%s  %s\n' "$DEB_SHA256" "$DEB_NAME" | tee build/Packages/SHA256SUMS
+          : >build/Packages/SHA256SUMS
           {
-            echo '### Debian package'
+            echo '### Debian packages'
             echo
-            echo "- File: \`$DEB_NAME\`"
-            echo "- Size: \`$DEB_SIZE bytes\`"
-            echo "- SHA-256: \`$DEB_SHA256\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          for flavor in roothide rootless; do
+            DEB_PATH="$(make --no-print-directory print-deb-path FLAVOR="$flavor")"
+            ARCHITECTURE="$(dpkg-deb -f "$DEB_PATH" Architecture)"
+            case "$flavor" in
+              roothide) PREFIX="" ;;
+              rootless) PREFIX="/var/jb" ;;
+            esac
+            ./Scripts/verify-deb.sh "$DEB_PATH" wiki.qaq.inspector "$VERSION" "$ARCHITECTURE" "$PREFIX"
+            dpkg-deb --info "$DEB_PATH"
+            dpkg-deb --contents "$DEB_PATH"
+            DEB_NAME="$(basename "$DEB_PATH")"
+            DEB_SIZE="$(stat -f '%z' "$DEB_PATH")"
+            DEB_SHA256="$(shasum -a 256 "$DEB_PATH" | awk '{print $1}')"
+            printf '%s  %s\n' "$DEB_SHA256" "$DEB_NAME" >>build/Packages/SHA256SUMS
+            {
+              echo "- \`$DEB_NAME\` ($flavor, $DEB_SIZE bytes)"
+              echo "  - SHA-256: \`$DEB_SHA256\`"
+            } >> "$GITHUB_STEP_SUMMARY"
+          done
+          cat build/Packages/SHA256SUMS
+          {
+            echo
             echo "- Artifact: \`CocoaInspector-$GITHUB_SHA\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload Debian package
+      - name: Upload Debian packages
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: CocoaInspector-${{ github.sha }}
@@ -128,31 +133,40 @@ jobs:
         run: |
           set -euo pipefail
           version="${GITHUB_REF_NAME#v}"
-          deb_path="$(make --no-print-directory print-deb-path)"
-          deb_name="$(basename "$deb_path")"
-          test -f "$deb_path"
+          roothide_deb="$(make --no-print-directory print-deb-path FLAVOR=roothide)"
+          rootless_deb="$(make --no-print-directory print-deb-path FLAVOR=rootless)"
           test -f build/Packages/SHA256SUMS
-          test "$(dpkg-deb -f "$deb_path" Version)" = "$version"
-          sha256="$(shasum -a 256 "$deb_path" | awk '{print $1}')"
           notes="$(mktemp "${TMPDIR:-/tmp}/cocoa-inspector-notes.XXXXXX")"
           trap 'rm -f "$notes"' EXIT
           {
-            echo "CocoaInspector $version for roothide."
+            echo "CocoaInspector $version."
+            echo
+            echo "| Jailbreak | Package |"
+            echo "| --- | --- |"
+          } >"$notes"
+          for deb_path in "$roothide_deb" "$rootless_deb"; do
+            test -f "$deb_path"
+            test "$(dpkg-deb -f "$deb_path" Version)" = "$version"
+          done
+          printf '| roothide | `%s` |\n' "$(basename "$roothide_deb")" >>"$notes"
+          printf '| rootless (/var/jb) | `%s` |\n' "$(basename "$rootless_deb")" >>"$notes"
+          {
             echo
             echo '```sh'
-            echo "sudo dpkg -i $deb_name"
+            echo "sudo dpkg -i <package>.deb"
             echo '```'
             echo
-            echo "- SHA-256: \`$sha256\`"
+            echo "SHA-256 sums are in \`SHA256SUMS\`."
+            echo
             echo "- Commit: \`$GITHUB_SHA\`"
-          } >"$notes"
+          } >>"$notes"
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            gh release upload "$GITHUB_REF_NAME" --clobber "$deb_path" build/Packages/SHA256SUMS
+            gh release upload "$GITHUB_REF_NAME" --clobber "$roothide_deb" "$rootless_deb" build/Packages/SHA256SUMS
             gh release edit "$GITHUB_REF_NAME" --notes-file "$notes"
           else
             gh release create "$GITHUB_REF_NAME" \
               --verify-tag \
               --title "$GITHUB_REF_NAME" \
               --notes-file "$notes" \
-              "$deb_path" build/Packages/SHA256SUMS
+              "$roothide_deb" "$rootless_deb" build/Packages/SHA256SUMS
           fi

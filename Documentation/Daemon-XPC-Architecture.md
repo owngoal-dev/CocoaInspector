@@ -89,7 +89,7 @@ Inspector.xcodeproj
 
 协议常量、Codable snapshot value、XPC client 和 delta reducer 通过源文件 target membership 由 App/CLI 复用，不创建 framework。`swift-argument-parser` 只链接 CLI，不进入 daemon；App/CLI 不链接 collector，daemon 不链接 SwiftUI/UIKit 或 ArgumentParser。
 
-建议安装位置：
+建议安装位置（下列路径相对于 jailbreak root；roothide 由 dpkg 映射到随机 jbroot，rootless 打包时统一加 `/var/jb` 前缀）：
 
 ```text
 /Applications/Inspector.app/Inspector
@@ -98,6 +98,8 @@ Inspector.xcodeproj
 /Library/LaunchDaemons/wiki.qaq.cocoainspectord.plist
 ```
 
+daemon 用自身 `proc_pidpath` 推导安装根目录再拼出 client 路径，因此两种 jailbreak 布局共用同一份 `InspectorProtocol.clientPaths`。
+
 daemon、App executable 和 CLI 由 deb 以 root:wheel 安装，且不可被 group/other 写入。
 
 ## 4. LaunchDaemon 行为
@@ -105,7 +107,7 @@ daemon、App executable 和 CLI 由 deb 以 root:wheel 安装，且不可被 gro
 推荐 plist 语义：
 
 - `Label`: `wiki.qaq.cocoainspectord`。
-- `ProgramArguments`: `/usr/libexec/cocoainspectord`；roothide 安装时映射到当前随机 jbroot。
+- `ProgramArguments`: `<prefix>/usr/libexec/cocoainspectord`；roothide 前缀为空并在安装时映射到当前随机 jbroot，rootless 前缀为 `/var/jb`。
 - `UserName`: `root`。
 - `MachServices`: 只发布 `wiki.qaq.inspector.service`。
 - 不设置 `RunAtLoad=true`。
@@ -505,7 +507,7 @@ Modules：
 
 ### XPC/launchd
 
-- [x] roothide LaunchDaemon plist 能由 bootstrap 按需加载，并在 client 断开后退出。
+- [x] roothide / rootless LaunchDaemon plist 能由 bootstrap 按需加载，并在 client 断开后退出。
 - [x] Swift `xpc_connection_create_mach_service` alias 在 iOS 17.3.1 运行。
 - [x] listener 从 audit token 取得 live PID，并只接受当前连接进程。
 - [x] `xpc_copy_entitlement_for_token` 可读取自定义 entitlement。

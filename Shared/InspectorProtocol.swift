@@ -4,6 +4,9 @@ enum InspectorProtocol {
     static let version: UInt64 = 2
     static let serviceName = "wiki.qaq.inspector.service"
     static let clientEntitlement = "wiki.qaq.inspector.client"
+    // Resolved against the install root the daemon itself runs from, so the
+    // same list covers roothide's randomized bootstrap and the fixed rootless
+    // /var/jb prefix. See PeerAuthenticator.resolveInstalledClientPaths().
     static let clientPaths = [
         "/Applications/Inspector.app/Inspector",
         "/usr/bin/cocoainspector",
