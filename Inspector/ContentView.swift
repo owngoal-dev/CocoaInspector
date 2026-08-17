@@ -13,12 +13,19 @@ struct ContentView: View {
     @State private var signalTarget: ProcessRow?
     @State private var signalFailure: String?
     @State private var isShowingSignalFailure = false
+    @State private var selection: ProcessIdentity?
+    // Snapshot of the selected row, kept so the detail column can survive the
+    // process exiting (the live lookup goes nil, the snapshot does not).
+    @State private var openedRow: ProcessRow?
+    // Start with both columns visible so an iPad launch doesn't open on an
+    // empty detail pane with the process list hidden behind a toolbar button.
+    @State private var columnVisibility = NavigationSplitViewVisibility.all
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         @Bindable var model = model
-        NavigationStack {
-            List {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
+            List(selection: $selection) {
                 processSection
                 creditsSection
             }
@@ -30,6 +37,20 @@ struct ContentView: View {
                 ToolbarItem(placement: .topBarTrailing) { actionsMenu }
             }
             .overlay { overlayContent }
+            .navigationSplitViewColumnWidth(min: 320, ideal: 380)
+        } detail: {
+            // The stack hosts the drill-downs (threads, files, ports, modules)
+            // pushed from the detail screen.
+            NavigationStack {
+                detailColumn
+            }
+        }
+        .navigationSplitViewStyle(.balanced)
+        .onChange(of: selection) { _, newValue in
+            guard let newValue else { return }
+            if let row = model.row(for: newValue) {
+                openedRow = row
+            }
         }
         .environment(model)
         // Guarded on the scene being active: a locked-screen launch (uiopen,
@@ -164,9 +185,7 @@ struct ContentView: View {
             let visible = model.visibleRows
             Section {
                 ForEach(visible) { row in
-                    NavigationLink {
-                        ProcessDetailView(row: row)
-                    } label: {
+                    NavigationLink(value: row.id) {
                         ProcessRowView(row: row)
                     }
                     .swipeActions(edge: .trailing) {
@@ -221,6 +240,25 @@ struct ContentView: View {
             parts.append(String(localized: "Paused"))
         }
         return parts.joined(separator: " · ")
+    }
+
+    // Prefers the live row so the numbers keep moving; falls back to the
+    // snapshot taken at selection time once the process has exited, so the
+    // detail screen can show its "no longer running" state instead of
+    // vanishing. `.id` resets the detail's own state when switching processes.
+    @ViewBuilder private var detailColumn: some View {
+        if let selection,
+           let row = model.row(for: selection)
+               ?? (openedRow?.id == selection ? openedRow : nil) {
+            ProcessDetailView(row: row)
+                .id(selection)
+        } else {
+            ContentUnavailableView(
+                "Select a Process",
+                systemImage: "square.stack.3d.up",
+                description: Text("Choose a process on the left to see what it’s up to.")
+            )
+        }
     }
 
     @ViewBuilder private var overlayContent: some View {
