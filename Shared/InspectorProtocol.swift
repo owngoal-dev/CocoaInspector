@@ -1,7 +1,7 @@
 import Foundation
 
 enum InspectorProtocol {
-    static let version: UInt64 = 2
+    static let version: UInt64 = 3
     static let serviceName = "wiki.qaq.inspector.service"
     static let clientEntitlement = "wiki.qaq.inspector.client"
     // Resolved against the install root the daemon itself runs from, so the
@@ -13,27 +13,24 @@ enum InspectorProtocol {
     ]
     static let signalTicketByteCount = 32
     static let maximumMessageDataByteCount = 2 * 1_024 * 1_024
-    static let foregroundLeaseNanoseconds: UInt64 = 3_000_000_000
 }
 
 enum InspectorOperation: UInt64, Sendable {
     case hello = 1
-    case renewForegroundLease = 2
-    case snapshot = 3
-    case prepareSignal = 4
-    case commitSignal = 5
-    case goodbye = 6
-    case processDetails = 7
+    case snapshot = 2
+    case prepareSignal = 3
+    case commitSignal = 4
+    case goodbye = 5
+    case processDetails = 6
 }
 
 enum InspectorReplyCode: Int64, Sendable {
     case success = 0
     case invalidRequest = 1
-    case foregroundLeaseRequired = 2
-    case busy = 3
-    case targetChanged = 4
-    case ticketExpired = 5
-    case operationFailed = 6
+    case busy = 2
+    case targetChanged = 3
+    case ticketExpired = 4
+    case operationFailed = 5
 }
 
 enum InspectorSignal: UInt64, Sendable {

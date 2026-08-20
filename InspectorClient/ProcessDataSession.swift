@@ -18,10 +18,6 @@ actor ProcessDataSession {
         } catch InspectorDataError.alreadyActive {}
     }
 
-    func renewForegroundLease() async throws {
-        try await client.renewForegroundLease()
-    }
-
     func sample(collectors: ProcessCollectorMask = .standard) async throws -> ProcessSnapshotUpdate {
         let snapshot = try await client.snapshot(collectors: collectors)
         return reducer.consume(snapshot)

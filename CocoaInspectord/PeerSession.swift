@@ -11,8 +11,7 @@ final class PeerSession {
     private let signalGate: SignalGate
     private let onInvalidation: () -> Void
     private var connection: xpc_connection_t?
-    private var leaseDeadline: UInt64?
-    private var leaseGeneration: UInt64 = 0
+    private var handshakeComplete = false
     private var snapshotInFlight = false
     private var snapshotGeneration: UInt64 = 0
     private var active = true
@@ -60,18 +59,17 @@ final class PeerSession {
         }
 
         if operation == .hello {
-            guard leaseDeadline == nil else { return send(reply, .invalidRequest) }
-            renewLease(reply)
+            guard !handshakeComplete else { return send(reply, .invalidRequest) }
+            handshakeComplete = true
+            send(reply, .success)
             return
         }
-        guard leaseDeadline != nil else { return send(reply, .foregroundLeaseRequired) }
+        guard handshakeComplete else { return send(reply, .invalidRequest) }
         guard !snapshotInFlight else { return send(reply, .busy) }
 
         switch operation {
         case .hello:
             break
-        case .renewForegroundLease:
-            renewLease(reply)
         case .snapshot:
             beginSnapshot(request, reply)
         case .prepareSignal:
@@ -86,38 +84,7 @@ final class PeerSession {
         }
     }
 
-    private func renewLease(_ reply: xpc_object_t) {
-        let deadline = DispatchTime.now().uptimeNanoseconds
-            + InspectorProtocol.foregroundLeaseNanoseconds
-        leaseDeadline = deadline
-        leaseGeneration &+= 1
-        let generation = leaseGeneration
-        controlQueue.asyncAfter(deadline: DispatchTime(uptimeNanoseconds: deadline)) { [weak self] in
-            guard let self,
-                  self.active,
-                  self.leaseGeneration == generation,
-                  !self.hasValidLease else { return }
-            self.invalidate()
-        }
-        send(reply, .success)
-    }
-
-    private var hasValidLease: Bool {
-        leaseDeadline.map { DispatchTime.now().uptimeNanoseconds <= $0 } ?? false
-    }
-
-    private func requireLease(_ reply: xpc_object_t) -> Bool {
-        guard hasValidLease else {
-            leaseDeadline = nil
-            signalGate.reset()
-            send(reply, .foregroundLeaseRequired)
-            return false
-        }
-        return true
-    }
-
     private func beginSnapshot(_ request: xpc_object_t, _ reply: xpc_object_t) {
-        guard requireLease(reply) else { return }
         let collectors = ProcessCollectorMask(
             rawValue: xpc_dictionary_get_uint64(request, InspectorWireKey.collectorMask)
         )
@@ -153,15 +120,13 @@ final class PeerSession {
     private func finishSnapshot(_ payload: Data?, _ reply: xpc_object_t) {
         guard active else { return }
         snapshotInFlight = false
-        guard requireLease(reply) else { return }
         guard let payload else { return send(reply, .operationFailed) }
         setData(payload, key: InspectorWireKey.payload, dictionary: reply)
         send(reply, .success)
     }
 
     private func beginDetails(_ request: xpc_object_t, _ reply: xpc_object_t) {
-        guard requireLease(reply),
-              let kind = ProcessDetailKind(
+        guard let kind = ProcessDetailKind(
                 rawValue: xpc_dictionary_get_uint64(request, InspectorWireKey.detailKind)
               ) else { return send(reply, .invalidRequest) }
         let pid = xpc_dictionary_get_int64(request, InspectorWireKey.pid)
@@ -184,7 +149,6 @@ final class PeerSession {
     }
 
     private func prepareSignal(_ request: xpc_object_t, _ reply: xpc_object_t) {
-        guard requireLease(reply) else { return }
         guard let signal = InspectorSignal(
                 rawValue: xpc_dictionary_get_uint64(request, InspectorWireKey.signal)
               ) else { return send(reply, .invalidRequest) }
@@ -208,7 +172,6 @@ final class PeerSession {
     }
 
     private func commitSignal(_ request: xpc_object_t, _ reply: xpc_object_t) {
-        guard requireLease(reply) else { return }
         guard let ticket = data(
                 InspectorWireKey.signalTicket,
                 in: request,
@@ -235,8 +198,7 @@ final class PeerSession {
     private func invalidate() {
         guard active else { return }
         active = false
-        leaseDeadline = nil
-        leaseGeneration &+= 1
+        handshakeComplete = false
         signalGate.reset()
         samplingQueue.async { [networkSampler] in networkSampler.close() }
         if let connection { xpc_connection_cancel(connection) }

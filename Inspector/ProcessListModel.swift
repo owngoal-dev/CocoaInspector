@@ -203,8 +203,8 @@ final class ProcessListModel: ObservableObject {
             rebuildVisibleRows { $0.searchText = newValue }
         }
     }
-    // Pausing keeps the last snapshot on screen but releases the daemon (the
-    // sampling loop deactivates on exit, so the foreground lease lapses).
+    // Pausing keeps the last snapshot on screen and closes this client's XPC
+    // session. Returning to live mode creates a fresh foreground session.
     var isPaused: Bool {
         get { viewState.isPaused }
         set {
@@ -252,19 +252,32 @@ final class ProcessListModel: ObservableObject {
         _ kind: ProcessDetailKind,
         for identity: ProcessIdentity
     ) async throws -> ProcessDetailSnapshot {
-        try await enqueue { [session] in
+        let closesAfterOperation = !shouldRun || isPaused
+        return try await enqueue { [session] in
             try await session.activateIfNeeded()
-            try await session.renewForegroundLease()
-            return try await session.details(kind, for: identity)
+            do {
+                let details = try await session.details(kind, for: identity)
+                if closesAfterOperation { await session.deactivate() }
+                return details
+            } catch {
+                if closesAfterOperation { await session.deactivate() }
+                throw error
+            }
         }
     }
 
     func sendSignal(_ signal: InspectorSignal, to identity: ProcessIdentity) async throws {
+        let closesAfterOperation = !shouldRun || isPaused
         try await enqueue { [session] in
             try await session.activateIfNeeded()
-            try await session.renewForegroundLease()
-            let ticket = try await session.prepareSignal(signal, for: identity)
-            try await session.commitSignal(ticket: ticket)
+            do {
+                let ticket = try await session.prepareSignal(signal, for: identity)
+                try await session.commitSignal(ticket: ticket)
+                if closesAfterOperation { await session.deactivate() }
+            } catch {
+                if closesAfterOperation { await session.deactivate() }
+                throw error
+            }
         }
     }
 
@@ -285,7 +298,6 @@ final class ProcessListModel: ObservableObject {
                 let order = sortOrder
                 let query = searchText
                 let prepared = try await enqueue { [session] in
-                    try await session.renewForegroundLease()
                     // Executable paths ride along with every sample: the Apps
                     // filter and row subtitles need them, and .standard omits them.
                     let update = try await session.sample(

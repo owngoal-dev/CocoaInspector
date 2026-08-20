@@ -24,7 +24,7 @@
 3. Inspector 根据 UI 刷新周期发起一个 `snapshot` request。
 4. daemon 完成一次采样并回复；上一请求结束前不允许下一请求并发。
 5. Inspector 收到回复后才安排下一次请求。
-6. Inspector 进入后台、连接断开或 lease 超时后，daemon 关闭 NSTAT 等会话资源并退出。
+6. Inspector 进入后台或连接断开后，daemon 关闭该连接的 NSTAT 等会话资源；最后一个连接消失后主动退出。
 
 这种 pull 模型天然满足：App 不运行就没有 request，没有 request 就没有采样；同时 request/reply 自带背压，不需要 daemon 维护推送队列。
 
@@ -232,7 +232,7 @@ daemon 必须从 XPC connection/收到的 message 取得 kernel 附带的 `audit
 
 ```text
 maySample = authenticated connection
-         && foreground lease 尚未到期
+         && hello 握手已经完成
          && 当前存在一个合法 snapshot request
          && 当前没有另一采样正在执行
 ```
@@ -266,8 +266,8 @@ maySample = authenticated connection
       |                               v
       |                      +----------------+
       +----------------------| AUTHENTICATED  |
-        disconnect / lease   +----------------+
-        expiry / idle grace
+          disconnect         +----------------+
+          / idle grace
 ```
 
 规则：
@@ -277,9 +277,9 @@ maySample = authenticated connection
 - 每个 snapshot request 最多触发一次采样。
 - 同一 connection 最多一个 in-flight request；重复请求返回 busy，不排队。
 - App 收到 reply 后才安排下一次 request。
-- App 进入后台先停止 schedule，再关闭 network lease 和 XPC connection。
-- daemon 以短 lease/heartbeat 兜底；App 崩溃时即使 XPC disconnect 事件延迟，也会自动关 collector。
-- lease 到期只停止/释放，不对任何目标进程执行操作。
+- App 进入后台先停止 schedule，再发送 `goodbye` 并关闭 XPC connection。
+- App 崩溃或被强杀时，以 XPC disconnect/cancel 事件清理对应 session 和 collector。
+- daemon 记录所有认证连接；连接数归零后启动 idle grace，宽限内没有新连接便主动退出。
 - 当前系统调用已经进入 kernel 时不保证瞬时取消，但返回后必须丢弃结果，不启动下一阶段。
 - daemon 不持久化采样计划；重启后永远从 IDLE 开始。
 
@@ -299,7 +299,6 @@ maySample = authenticated connection
 
 ```text
 hello
-renewForegroundLease
 snapshot
 prepareSignal
 commitSignal
@@ -378,7 +377,7 @@ ticket 必须：
 - 使用固定长度随机值并以 constant-time 比较。
 - 只可消费一次。
 - 很短 TTL；建议数秒级并由实测决定。
-- connection 断开、lease 过期、App 后台或 daemon memory pressure 时全部清除。
+- connection 断开、App 后台或 daemon memory pressure 时全部清除。
 - 不写磁盘、不跨 daemon restart 恢复。
 
 commit 前再次读取 process start time，避免 PID 在两步间被复用。失败时不自动 retry；App 必须重新展示当前目标并重新确认。
@@ -391,7 +390,7 @@ CLI 的 `self-test` 默认只读；只有显式传入 `self-test --signal` 才�
 
 ```text
 maySignal = authenticated session
-         && active foreground lease
+         && hello 握手已经完成
          && valid unexpired one-time ticket
          && current target identity matches ticket
 ```
@@ -501,7 +500,7 @@ Modules：
 - 采样部分失败：以 per-field availability/error 返回，不伪装成 0。
 - detail 达上限：返回 truncated，而不是扩容到 jetsam 风险。
 - signal target 已变化：拒绝，不 retry。
-- lease 到期或断线：停止、释放、清 ticket；绝不对目标进程执行 cleanup action。
+- goodbye 或断线：停止、释放、清 ticket；绝不对目标进程执行 cleanup action。
 
 ## 13. 实机验证清单
 
@@ -522,7 +521,7 @@ Modules：
 - [ ] 仅 lookup/未认证连接不触发采样。
 - [ ] 认证 hello 不触发采样。
 - [x] 一个 snapshot request 只执行一次采样，in-flight 时不排队第二次。
-- [x] client goodbye/断线/lease 超时后 NSTAT 和采样停止。
+- [x] client goodbye/断线后 NSTAT 和采样停止。
 - [x] idle grace 后 daemon 退出，后续能由 launchd 重启。
 - [ ] daemon jetsam/crash 后不存在动作重放。
 
@@ -537,7 +536,7 @@ Modules：
 
 ### Signal
 
-- [ ] 没有 active foreground lease 时 prepare/commit 均失败。
+- [ ] 未完成 hello 握手时 prepare/commit 均失败。
 - [ ] ticket 跨 connection、过期、重复使用均失败。
 - [ ] PID reuse/start time 不同必定失败。
 - [x] PID 0、PID 1、daemon 自身和当前 client 被硬拒绝。
@@ -547,7 +546,7 @@ Modules：
 
 1. 纯 Swift XPC runtime probe：listener/client、audit token、entitlement、executable path。
 2. on-demand LaunchDaemon 生命周期：无采样，只验证启动、认证、断线和退出。
-3. 固定小 payload 的 `hello` 和 foreground lease。
+3. 固定小 payload 的 `hello` 和连接生命周期管理。
 4. 单次 base process snapshot，严格内存上限和 availability。
 5. client-driven 刷新与后台关闭。
 6. task/rusage/FD/port 计数 collector mask。

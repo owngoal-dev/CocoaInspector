@@ -58,12 +58,6 @@ actor InspectorDataClient {
         }
     }
 
-    func renewForegroundLease() async throws {
-        let reply = try await send(.renewForegroundLease)
-        try requireSuccess(reply)
-        state = .active
-    }
-
     func snapshot(collectors: ProcessCollectorMask = .standard) async throws -> ProcessSnapshot {
         guard collectors.subtracting(.supported).isEmpty else {
             throw InspectorDataError.invalidReply

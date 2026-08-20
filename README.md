@@ -2,7 +2,7 @@
 
 Live process inspector for jailbroken iOS 16.0 or newer — [roothide](https://github.com/roothide) and rootless (`/var/jb`).
 
-SwiftUI app (`Inspector/`), root LaunchDaemon (`CocoaInspectord/`), CLI (`CocoaInspectorCLI/`), and a shared XPC data layer (`Shared/`, `InspectorClient/`). The daemon samples only while an authenticated client holds a foreground lease. Clients can list processes, open per-process detail views, export snapshots, and send two-phase `SIGTERM` / `SIGKILL`.
+SwiftUI app (`Inspector/`), root LaunchDaemon (`CocoaInspectord/`), CLI (`CocoaInspectorCLI/`), and a shared XPC data layer (`Shared/`, `InspectorClient/`). The daemon samples only on authenticated client requests; the app owns its XPC connection for its foreground lifetime, and the daemon exits after the last client disconnects. Clients can list processes, open per-process detail views, export snapshots, and send two-phase `SIGTERM` / `SIGKILL`.
 
 License: [MIT](LICENSE).
 

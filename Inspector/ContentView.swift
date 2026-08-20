@@ -33,11 +33,7 @@ struct ContentView: View {
             .searchable(text: $model.searchText, prompt: "Search by name or PID")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    SystemStatsMenu(
-                        model: model,
-                        isDisabled: model.rows.isEmpty
-                    )
-                    .equatable()
+                    SystemStatsMenuButton(stats: systemStats)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     ProcessListActionsMenu(
@@ -69,8 +65,7 @@ struct ContentView: View {
         // Guarded on the scene being active: a locked-screen launch (uiopen,
         // prewarming) lands here with scenePhase already .background, so the
         // .background case below never fires and an unconditional start would
-        // sample forever in the background — monopolizing the daemon's single
-        // session and locking out the CLI.
+        // keep an unnecessary client connection and sampling loop alive.
         .onAppear {
             if scenePhase == .active { model.start() }
         }
@@ -105,6 +100,30 @@ struct ContentView: View {
         } message: {
             Text(signalFailure ?? String(localized: "Something unexpected went wrong."))
         }
+    }
+
+    private var systemStats: SystemStatsSnapshot {
+        let cpuUsage = InspectorFormat.percent(model.totalCPUFraction)
+        let cores = Int(model.system.activeProcessorCount)
+        let cpu = cores > 0
+            ? "\(cpuUsage) · \(String(localized: "\(cores) cores"))"
+            : cpuUsage
+        let totalMemory = model.system.physicalMemory
+        let freeMemory = model.system.freeMemory
+        let usedMemory = totalMemory > freeMemory ? totalMemory - freeMemory : 0
+        let memory = String(
+            localized: "\(InspectorFormat.bytes(usedMemory)) of \(InspectorFormat.bytes(totalMemory)) in use"
+        )
+        let processCount = model.rows.count
+        let threadCount = Int(model.system.totalThreadCount)
+        let processes = String(localized: "\(processCount) processes · \(threadCount) threads")
+        return SystemStatsSnapshot(
+            cpu: cpu,
+            memory: memory,
+            processes: processes,
+            uptime: InspectorFormat.duration(model.uptimeNanoseconds),
+            isDisabled: model.rows.isEmpty
+        )
     }
 
     @ViewBuilder private var processSection: some View {
@@ -233,82 +252,76 @@ struct ContentView: View {
     }
 }
 
-// Keep the Menu itself stable while the observed child refreshes its rows.
-// Replacing a toolbar Menu every second dismisses its presented system menu;
-// invalidating only the content lets the visible values update in place.
-private struct SystemStatsMenu: View, Equatable {
-    let model: ProcessListModel
+private struct SystemStatsSnapshot {
+    let cpu: String
+    let memory: String
+    let processes: String
+    let uptime: String
     let isDisabled: Bool
-
-    static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.model === rhs.model && lhs.isDisabled == rhs.isDisabled
-    }
-
-    var body: some View {
-        Menu {
-            SystemStatsMenuContent(model: model)
-        } label: {
-            if #available(iOS 17.0, *) {
-                Label("System Stats", systemImage: "gauge.with.needle")
-            } else {
-                Label("System Stats", systemImage: "gauge")
-            }
-        }
-        .disabled(isDisabled)
-    }
 }
 
-private struct SystemStatsMenuContent: View {
-    @ObservedObject var model: ProcessListModel
+// UIKit keeps this UIMenu attached to the same toolbar button while SwiftUI
+// refreshes the surrounding list. Deferred elements capture one snapshot at
+// presentation time, so an open menu is never rebuilt by a live sample.
+private struct SystemStatsMenuButton: UIViewRepresentable {
+    let stats: SystemStatsSnapshot
 
-    var body: some View {
-        Section("This Device") {
-            copyableStat("CPU", cpuSummary, icon: "cpu")
-            copyableStat("Memory", memorySummary, icon: "memorychip")
-            copyableStat("Processes", processesSummary, icon: "square.stack.3d.up")
-            copyableStat(
-                "Up and Running",
-                InspectorFormat.duration(model.uptimeNanoseconds),
-                icon: "clock"
-            )
+    func makeCoordinator() -> Coordinator {
+        Coordinator(stats: stats)
+    }
+
+    func makeUIView(context: Context) -> UIButton {
+        var configuration = UIButton.Configuration.plain()
+        let imageName: String
+        if #available(iOS 17.0, *) {
+            imageName = "gauge.with.needle"
+        } else {
+            imageName = "gauge"
         }
-    }
+        configuration.image = UIImage(systemName: imageName)
+        configuration.contentInsets = .zero
 
-    // Title + value render as a two-line menu item; tapping copies the stat.
-    private func copyableStat(
-        _ title: LocalizedStringResource,
-        _ value: String,
-        icon: String
-    ) -> some View {
-        Button {
-            UIPasteboard.general.string = "\(String(localized: title)): \(value)"
-        } label: {
-            Text(title)
-            Text(value)
-            Image(systemName: icon)
-        }
-    }
-
-    private var cpuSummary: String {
-        let usage = InspectorFormat.percent(model.totalCPUFraction)
-        let cores = Int(model.system.activeProcessorCount)
-        guard cores > 0 else { return usage }
-        return "\(usage) · \(String(localized: "\(cores) cores"))"
-    }
-
-    private var memorySummary: String {
-        let total = model.system.physicalMemory
-        let free = model.system.freeMemory
-        let used = total > free ? total - free : 0
-        return String(
-            localized: "\(InspectorFormat.bytes(used)) of \(InspectorFormat.bytes(total)) in use"
+        let button = UIButton(configuration: configuration)
+        button.showsMenuAsPrimaryAction = true
+        button.menu = UIMenu(
+            title: String(localized: "This Device"),
+            children: [UIDeferredMenuElement.uncached { [weak coordinator = context.coordinator] completion in
+                DispatchQueue.main.async {
+                    completion(coordinator?.menuElements() ?? [])
+                }
+            }]
         )
+        button.accessibilityLabel = String(localized: "System Stats")
+        button.isEnabled = !stats.isDisabled
+        return button
     }
 
-    private var processesSummary: String {
-        let processes = model.rows.count
-        let threads = Int(model.system.totalThreadCount)
-        return String(localized: "\(processes) processes · \(threads) threads")
+    func updateUIView(_ button: UIButton, context: Context) {
+        context.coordinator.stats = stats
+        button.isEnabled = !stats.isDisabled
+    }
+
+    final class Coordinator {
+        var stats: SystemStatsSnapshot
+
+        init(stats: SystemStatsSnapshot) {
+            self.stats = stats
+        }
+
+        func menuElements() -> [UIMenuElement] {
+            [
+                stat("CPU", value: stats.cpu, icon: "cpu"),
+                stat("Memory", value: stats.memory, icon: "memorychip"),
+                stat("Processes", value: stats.processes, icon: "square.stack.3d.up"),
+                stat("Up and Running", value: stats.uptime, icon: "clock"),
+            ]
+        }
+
+        private func stat(_ title: String, value: String, icon: String) -> UIAction {
+            UIAction(title: "\(title) · \(value)", image: UIImage(systemName: icon)) { _ in
+                UIPasteboard.general.string = "\(title): \(value)"
+            }
+        }
     }
 }
 
@@ -404,7 +417,7 @@ private struct ProcessRowView: View {
     private var subtitle: String {
         var parts = [
             "PID \(String(row.record.pid))",
-            InspectorFormat.user(row.record.userID),
+            InspectorFormat.userName(row.record.userID),
         ]
         parts.append(String(localized: "\(Int(row.record.threadCount)) threads"))
         return parts.joined(separator: " · ")

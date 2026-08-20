@@ -21,7 +21,7 @@ final class DaemonServer {
     private lazy var detailSampler = DetailSampler(processes: sampler)
 
     private var listener: xpc_connection_t?
-    private var activeSession: PeerSession?
+    private var sessions = [UUID: PeerSession]()
     private var idleGeneration: UInt64 = 0
 
     func start() throws {
@@ -47,11 +47,6 @@ final class DaemonServer {
 
     private func accept(_ event: xpc_object_t) {
         guard xpc_get_type(event) == XPC_TYPE_CONNECTION else { return }
-        guard activeSession == nil else {
-            xpc_connection_cancel(event)
-            return
-        }
-
         guard let clientPID = authenticator.authenticate(event) else {
             xpc_connection_cancel(event)
             scheduleIdleExit()
@@ -59,6 +54,7 @@ final class DaemonServer {
         }
 
         idleGeneration &+= 1
+        let sessionID = UUID()
         let session = PeerSession(
             connection: event,
             clientPID: clientPID,
@@ -67,16 +63,15 @@ final class DaemonServer {
             sampler: sampler,
             detailSampler: detailSampler
         ) { [weak self] in
-            self?.sessionInvalidated()
+            self?.sessionInvalidated(sessionID)
         }
-        activeSession = session
+        sessions[sessionID] = session
         session.activate()
     }
 
-    private func sessionInvalidated() {
-        guard activeSession != nil else { return }
-        activeSession = nil
-        scheduleIdleExit()
+    private func sessionInvalidated(_ sessionID: UUID) {
+        guard sessions.removeValue(forKey: sessionID) != nil else { return }
+        if sessions.isEmpty { scheduleIdleExit() }
     }
 
     private func scheduleIdleExit() {
@@ -84,7 +79,7 @@ final class DaemonServer {
         let scheduledGeneration = idleGeneration
         controlQueue.asyncAfter(deadline: .now() + Self.idleExitDelay) { [weak self] in
             guard let self,
-                  self.activeSession == nil,
+                  self.sessions.isEmpty,
                   self.idleGeneration == scheduledGeneration else { return }
             exit(EXIT_SUCCESS)
         }

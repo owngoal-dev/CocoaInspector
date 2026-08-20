@@ -114,7 +114,6 @@ struct ProcessDetails: AsyncParsableCommand {
             let identity = try await CocoaInspectorOperations.identity(pid, session: $0)
             var results = [ProcessDetailSnapshot]()
             for value in kind.values {
-                try await $0.renewForegroundLease()
                 results.append(try await $0.details(value, for: identity))
             }
             try CocoaInspectorOperations.printJSON(DetailOutput(results: results))
@@ -248,7 +247,6 @@ enum CocoaInspectorOperations {
               !own.executablePath.isEmpty else { throw CommandFailure("own process fields") }
 
         try await Task.sleep(nanoseconds: 200_000_000)
-        try await session.renewForegroundLease()
         let second = try await session.sample(collectors: .all)
         guard second.snapshot.generation > first.snapshot.generation,
               second.intervals.contains(where: {
@@ -263,7 +261,7 @@ enum CocoaInspectorOperations {
             try await signalSelfTest(session, signal: .terminate)
             try await signalSelfTest(session, signal: .forceKill)
         }
-        print("PASS xpc authentication and foreground lease")
+        print("PASS xpc authentication and connection lifecycle")
         print("PASS \(second.snapshot.processes.count) process records and interval deltas")
         print("PASS system, process, command line, task, FD, port, sandbox, and network fields")
         for detail in details {
@@ -278,7 +276,6 @@ enum CocoaInspectorOperations {
     ) async throws -> [ProcessDetailSnapshot] {
         var results = [ProcessDetailSnapshot]()
         for kind in ProcessDetailKind.allCases {
-            try await session.renewForegroundLease()
             let result = try await session.details(kind, for: identity)
             let usable = result.status == .available || result.status == .partial
             guard usable else {
@@ -318,7 +315,6 @@ enum CocoaInspectorOperations {
         }
 
         try await Task.sleep(nanoseconds: 100_000_000)
-        try await session.renewForegroundLease()
         let snapshot = try await session.sample(collectors: .all).snapshot
         guard let process = snapshot.processes.first(where: { $0.pid == child }) else {
             throw CommandFailure("test child sampling")
@@ -336,7 +332,6 @@ enum CocoaInspectorOperations {
                 }
             }
             try await Task.sleep(nanoseconds: 50_000_000)
-            try await session.renewForegroundLease()
             let liveProcesses = try await session.sample().snapshot.processes
             if reaped, !liveProcesses.contains(where: { $0.identity == process.identity }) {
                 return
@@ -410,7 +405,7 @@ enum CocoaInspectorOperations {
     ) async throws {
         _ = try await session.sample()
         for sample in 1...count {
-            try await sleep(interval, session: session)
+            try await Task.sleep(nanoseconds: interval)
             let update = try await session.sample()
             print("sample \(sample): \(update.snapshot.processes.count) processes, +\(update.started.count)/-\(update.exited.count)")
             print("   PID     CPU%          RSS    FOOTPRINT NAME")
@@ -425,21 +420,6 @@ enum CocoaInspectorOperations {
                 ))
             }
         }
-    }
-
-    static func sleep(
-        _ nanoseconds: UInt64,
-        session: ProcessDataSession
-    ) async throws {
-        var remaining = nanoseconds
-        let heartbeat: UInt64 = 2_000_000_000
-        while remaining > heartbeat {
-            try await Task.sleep(nanoseconds: heartbeat)
-            try await session.renewForegroundLease()
-            remaining -= heartbeat
-        }
-        try await Task.sleep(nanoseconds: remaining)
-        try await session.renewForegroundLease()
     }
 
     static func send(

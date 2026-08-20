@@ -33,10 +33,11 @@ enum InspectorFormat {
     }
 
     static func user(_ uid: UInt32) -> String {
-        guard let name = UserAccountResolver.shared.name(for: uid_t(uid)) else {
-            return "UID \(uid)"
-        }
-        return "\(name) (\(uid))"
+        "\(userName(uid)) (\(uid))"
+    }
+
+    static func userName(_ uid: UInt32) -> String {
+        UserAccountResolver.shared.name(for: uid_t(uid)) ?? "UID \(uid)"
     }
 
     static func sandbox(_ status: ProcessSandboxStatus) -> String {
@@ -114,8 +115,6 @@ enum InspectorErrorText {
                 return String(localized: "Done.")
             case .invalidRequest:
                 return String(localized: "The inspector service turned down this request.")
-            case .foregroundLeaseRequired:
-                return String(localized: "The session timed out. Please try again.")
             case .busy:
                 return String(localized: "The inspector service is busy right now.")
             case .targetChanged:
