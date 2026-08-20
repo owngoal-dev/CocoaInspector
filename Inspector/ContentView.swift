@@ -32,8 +32,22 @@ struct ContentView: View {
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $model.searchText, prompt: "Search by name or PID")
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) { systemMenu }
-                ToolbarItem(placement: .navigationBarTrailing) { actionsMenu }
+                ToolbarItem(placement: .navigationBarLeading) {
+                    SystemStatsMenu(
+                        model: model,
+                        isDisabled: model.rows.isEmpty
+                    )
+                    .equatable()
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    ProcessListActionsMenu(
+                        model: model,
+                        isPaused: model.isPaused,
+                        sortOrder: model.sortOrder,
+                        scopeFilter: model.scopeFilter
+                    )
+                    .equatable()
+                }
             }
             .overlay { overlayContent }
             .navigationSplitViewColumnWidth(min: 320, ideal: 380)
@@ -91,95 +105,6 @@ struct ContentView: View {
         } message: {
             Text(signalFailure ?? String(localized: "Something unexpected went wrong."))
         }
-    }
-
-    private var systemMenu: some View {
-        Menu {
-            Section("This Device") {
-                copyableStat("CPU", cpuSummary, icon: "cpu")
-                copyableStat("Memory", memorySummary, icon: "memorychip")
-                copyableStat("Processes", processesSummary, icon: "square.stack.3d.up")
-                copyableStat(
-                    "Up and Running",
-                    InspectorFormat.duration(model.uptimeNanoseconds),
-                    icon: "clock"
-                )
-            }
-        } label: {
-            if #available(iOS 17.0, *) {
-                Label("System Stats", systemImage: "gauge.with.needle")
-            } else {
-                Label("System Stats", systemImage: "gauge")
-            }
-        }
-        .disabled(model.rows.isEmpty)
-    }
-
-    // Title + value render as a two-line menu item; tapping copies the stat.
-    private func copyableStat(
-        _ title: LocalizedStringResource,
-        _ value: String,
-        icon: String
-    ) -> some View {
-        Button {
-            UIPasteboard.general.string = "\(String(localized: title)): \(value)"
-        } label: {
-            Text(title)
-            Text(value)
-            Image(systemName: icon)
-        }
-    }
-
-    private var actionsMenu: some View {
-        Menu {
-            Toggle(isOn: $model.isPaused) {
-                Label("Pause Live Updates", systemImage: "pause.circle")
-            }
-            Picker("Sort By", systemImage: "arrow.up.arrow.down", selection: $model.sortOrder) {
-                ForEach(ProcessSortOrder.allCases) { order in
-                    Text(order.label).tag(order)
-                }
-            }
-            .pickerStyle(.menu)
-            Picker(
-                "Show",
-                systemImage: "line.3.horizontal.decrease.circle",
-                selection: $model.scopeFilter
-            ) {
-                ForEach(ProcessScopeFilter.allCases) { filter in
-                    Text(filter.label).tag(filter)
-                }
-            }
-            .pickerStyle(.menu)
-        } label: {
-            Image(
-                systemName: model.isPaused || model.scopeFilter != .all
-                    ? "ellipsis.circle.fill"
-                    : "ellipsis.circle"
-            )
-        }
-    }
-
-    private var cpuSummary: String {
-        let usage = InspectorFormat.percent(model.totalCPUFraction)
-        let cores = Int(model.system.activeProcessorCount)
-        guard cores > 0 else { return usage }
-        return "\(usage) · \(String(localized: "\(cores) cores"))"
-    }
-
-    private var memorySummary: String {
-        let total = model.system.physicalMemory
-        let free = model.system.freeMemory
-        let used = total > free ? total - free : 0
-        return String(
-            localized: "\(InspectorFormat.bytes(used)) of \(InspectorFormat.bytes(total)) in use"
-        )
-    }
-
-    private var processesSummary: String {
-        let processes = model.rows.count
-        let threads = Int(model.system.totalThreadCount)
-        return String(localized: "\(processes) processes · \(threads) threads")
     }
 
     @ViewBuilder private var processSection: some View {
@@ -305,6 +230,145 @@ struct ContentView: View {
                 isShowingSignalFailure = true
             }
         }
+    }
+}
+
+// Keep the Menu itself stable while the observed child refreshes its rows.
+// Replacing a toolbar Menu every second dismisses its presented system menu;
+// invalidating only the content lets the visible values update in place.
+private struct SystemStatsMenu: View, Equatable {
+    let model: ProcessListModel
+    let isDisabled: Bool
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.model === rhs.model && lhs.isDisabled == rhs.isDisabled
+    }
+
+    var body: some View {
+        Menu {
+            SystemStatsMenuContent(model: model)
+        } label: {
+            if #available(iOS 17.0, *) {
+                Label("System Stats", systemImage: "gauge.with.needle")
+            } else {
+                Label("System Stats", systemImage: "gauge")
+            }
+        }
+        .disabled(isDisabled)
+    }
+}
+
+private struct SystemStatsMenuContent: View {
+    @ObservedObject var model: ProcessListModel
+
+    var body: some View {
+        Section("This Device") {
+            copyableStat("CPU", cpuSummary, icon: "cpu")
+            copyableStat("Memory", memorySummary, icon: "memorychip")
+            copyableStat("Processes", processesSummary, icon: "square.stack.3d.up")
+            copyableStat(
+                "Up and Running",
+                InspectorFormat.duration(model.uptimeNanoseconds),
+                icon: "clock"
+            )
+        }
+    }
+
+    // Title + value render as a two-line menu item; tapping copies the stat.
+    private func copyableStat(
+        _ title: LocalizedStringResource,
+        _ value: String,
+        icon: String
+    ) -> some View {
+        Button {
+            UIPasteboard.general.string = "\(String(localized: title)): \(value)"
+        } label: {
+            Text(title)
+            Text(value)
+            Image(systemName: icon)
+        }
+    }
+
+    private var cpuSummary: String {
+        let usage = InspectorFormat.percent(model.totalCPUFraction)
+        let cores = Int(model.system.activeProcessorCount)
+        guard cores > 0 else { return usage }
+        return "\(usage) · \(String(localized: "\(cores) cores"))"
+    }
+
+    private var memorySummary: String {
+        let total = model.system.physicalMemory
+        let free = model.system.freeMemory
+        let used = total > free ? total - free : 0
+        return String(
+            localized: "\(InspectorFormat.bytes(used)) of \(InspectorFormat.bytes(total)) in use"
+        )
+    }
+
+    private var processesSummary: String {
+        let processes = model.rows.count
+        let threads = Int(model.system.totalThreadCount)
+        return String(localized: "\(processes) processes · \(threads) threads")
+    }
+}
+
+// This menu only depends on interactive settings. Snapshot values are stored
+// separately from the model reference so Equatable can ignore live samples but
+// still redraw after a pause, sort, or scope change.
+private struct ProcessListActionsMenu: View, Equatable {
+    let model: ProcessListModel
+    let isPaused: Bool
+    let sortOrder: ProcessSortOrder
+    let scopeFilter: ProcessScopeFilter
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.model === rhs.model
+            && lhs.isPaused == rhs.isPaused
+            && lhs.sortOrder == rhs.sortOrder
+            && lhs.scopeFilter == rhs.scopeFilter
+    }
+
+    var body: some View {
+        Menu {
+            Toggle(isOn: binding(for: \ProcessListModel.isPaused)) {
+                Label("Pause Live Updates", systemImage: "pause.circle")
+            }
+            Picker(
+                "Sort By",
+                systemImage: "arrow.up.arrow.down",
+                selection: binding(for: \ProcessListModel.sortOrder)
+            ) {
+                ForEach(ProcessSortOrder.allCases) { order in
+                    Text(order.label).tag(order)
+                }
+            }
+            .pickerStyle(.menu)
+            Picker(
+                "Show",
+                systemImage: "line.3.horizontal.decrease.circle",
+                selection: binding(for: \ProcessListModel.scopeFilter)
+            ) {
+                ForEach(ProcessScopeFilter.allCases) { filter in
+                    Text(filter.label).tag(filter)
+                }
+            }
+            .pickerStyle(.menu)
+        } label: {
+            Image(
+                systemName: isPaused || scopeFilter != .all
+                    ? "ellipsis.circle.fill"
+                    : "ellipsis.circle"
+            )
+        }
+    }
+
+    private func binding<Value>(
+        for keyPath: ReferenceWritableKeyPath<ProcessListModel, Value>
+    ) -> Binding<Value> {
+        Binding(
+            get: { model[keyPath: keyPath] },
+            set: { model[keyPath: keyPath] = $0 }
+        )
     }
 }
 
