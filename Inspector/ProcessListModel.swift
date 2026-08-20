@@ -8,18 +8,8 @@ struct ProcessRow: Identifiable, Equatable {
 
     var id: ProcessIdentity { record.identity }
     var displayName: String { record.name.isEmpty ? "pid \(record.pid)" : record.name }
-    // App executables run from an .app bundle in one of two install locations:
-    // user apps in a bundle container (/var/containers/Bundle/Application/<UUID>/,
-    // or /var/mobile/Containers/Bundle/Application/ before iOS 9.3) and system
-    // apps in an /Applications directory. That directory is only at the volume
-    // root on stock and roothide installs; on rootless it sits under the
-    // jailbreak prefix, so match it anywhere in the path. The ".app/"
-    // requirement keeps jbroot daemons (installed under a .jbroot-* bundle
-    // container) out.
     var isApp: Bool {
-        record.executablePath.contains(".app/")
-            && (record.executablePath.contains("/Bundle/Application/")
-                || record.executablePath.contains("/Applications/"))
+        ApplicationBundleLocator.hostApplicationPath(for: record.executablePath) != nil
     }
 }
 

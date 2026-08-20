@@ -376,7 +376,11 @@ private struct ProcessRowView: View {
     let row: ProcessRow
 
     var body: some View {
-        HStack {
+        HStack(spacing: 10) {
+            if row.isApp {
+                ProcessApplicationIcon(executablePath: row.record.executablePath)
+                    .equatable()
+            }
             VStack(alignment: .leading, spacing: 2) {
                 Text(row.displayName)
                     .lineLimit(1)
@@ -384,7 +388,7 @@ private struct ProcessRowView: View {
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
-            Spacer()
+            Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 2) {
                 Text(InspectorFormat.percent(row.cpuFraction))
                     .monospacedDigit()
@@ -402,7 +406,6 @@ private struct ProcessRowView: View {
             "PID \(String(row.record.pid))",
             InspectorFormat.user(row.record.userID),
         ]
-        if row.isApp { parts.append(String(localized: "App")) }
         parts.append(String(localized: "\(Int(row.record.threadCount)) threads"))
         return parts.joined(separator: " · ")
     }
