@@ -33,11 +33,10 @@ enum InspectorFormat {
     }
 
     static func user(_ uid: UInt32) -> String {
-        switch uid {
-        case 0: "root"
-        case 501: "mobile"
-        default: "uid \(uid)"
+        guard let name = UserAccountResolver.shared.name(for: uid_t(uid)) else {
+            return "UID \(uid)"
         }
+        return "\(name) (\(uid))"
     }
 
     static func sandbox(_ status: ProcessSandboxStatus) -> String {

@@ -36,7 +36,9 @@ enum ProcessDetailTable {
                 DetailColumn(
                     order: .priority,
                     title: "Pri",
-                    width: 30,
+                    // Fits localized titles such as “优先级” together with
+                    // the sort chevron without breaking row/header alignment.
+                    width: 60,
                     alignment: .trailing,
                     style: .number
                 ),

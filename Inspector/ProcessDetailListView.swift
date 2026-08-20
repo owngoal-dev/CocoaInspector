@@ -4,6 +4,7 @@ import UIKit
 struct ProcessDetailListView: View {
     let kind: ProcessDetailKind
     let identity: ProcessIdentity
+    let processName: String
 
     @EnvironmentObject private var model: ProcessListModel
     @State private var detail: ProcessDetailSnapshot?
@@ -13,14 +14,16 @@ struct ProcessDetailListView: View {
     @State private var failure: String?
     @State private var searchText = ""
     @State private var inspected: DetailRowInspection?
+    @State private var menuRevision: UInt = 0
     @AppStorage private var sortOrder: ProcessDetailSortOrder
     @AppStorage private var sortAscending: Bool
 
     private let columns: [DetailColumn]
 
-    init(kind: ProcessDetailKind, identity: ProcessIdentity) {
+    init(kind: ProcessDetailKind, identity: ProcessIdentity, processName: String) {
         self.kind = kind
         self.identity = identity
+        self.processName = processName
         columns = ProcessDetailTable.columns(for: kind)
         // One stored order per kind: "sort by size" means nothing to threads.
         let fallback = ProcessDetailSort.default(for: kind)
@@ -65,10 +68,6 @@ struct ProcessDetailListView: View {
         }
     }
 
-    private var processName: String {
-        model.row(for: identity)?.displayName ?? "pid \(identity.pid)"
-    }
-
     var body: some View {
         List {
             if let detail {
@@ -82,7 +81,17 @@ struct ProcessDetailListView: View {
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $searchText, prompt: searchPrompt)
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) { optionsMenu }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                ProcessDetailShareMenu(
+                    title: title,
+                    processName: processName,
+                    records: visible,
+                    isAvailable: detail != nil,
+                    isEmpty: visible.isEmpty,
+                    revision: menuRevision
+                )
+                .equatable()
+            }
         }
         .overlay { overlayContent }
         .sheet(item: $inspected) { RowInspectionSheet(inspection: $0) }
@@ -90,27 +99,6 @@ struct ProcessDetailListView: View {
         .refreshable { await load() }
         .onChange(of: searchText) { _ in rebuildVisible() }
         .onChange(of: sort) { _ in rebuildVisible() }
-    }
-
-    @ViewBuilder private var optionsMenu: some View {
-        Menu {
-            if detail != nil {
-                ShareLink(
-                    item: ProcessDetailExport.text(
-                        title: title,
-                        process: processName,
-                        records: visible
-                    ),
-                    subject: Text(verbatim: "\(title) — \(processName)")
-                ) {
-                    Label("Share", systemImage: "square.and.arrow.up")
-                }
-                .disabled(visible.isEmpty)
-            }
-        } label: {
-            Image(systemName: "ellipsis.circle")
-        }
-        .disabled(detail == nil)
     }
 
     @ViewBuilder private func content(for detail: ProcessDetailSnapshot) -> some View {
@@ -216,6 +204,7 @@ struct ProcessDetailListView: View {
     private func rebuildVisible() {
         guard let detail else {
             visible = ProcessDetailRecords()
+            menuRevision &+= 1
             return
         }
         visible = ProcessDetailRecords.visible(
@@ -224,6 +213,7 @@ struct ProcessDetailListView: View {
             sort: sort,
             query: searchText
         )
+        menuRevision &+= 1
     }
 
     private func load() async {
@@ -250,6 +240,47 @@ struct ProcessDetailListView: View {
         } catch {
             failure = InspectorErrorText.describe(error)
         }
+    }
+}
+
+// Records are carried into the menu so the share item is generated lazily.
+// revision is the comparison token: live samples leave it unchanged, while a
+// load, search, or sort rebuild increments it and refreshes the menu payload.
+private struct ProcessDetailShareMenu: View, Equatable {
+    let title: String
+    let processName: String
+    let records: ProcessDetailRecords
+    let isAvailable: Bool
+    let isEmpty: Bool
+    let revision: UInt
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.title == rhs.title
+            && lhs.processName == rhs.processName
+            && lhs.isAvailable == rhs.isAvailable
+            && lhs.isEmpty == rhs.isEmpty
+            && lhs.revision == rhs.revision
+    }
+
+    var body: some View {
+        Menu {
+            if isAvailable {
+                ShareLink(
+                    item: ProcessDetailExport.text(
+                        title: title,
+                        process: processName,
+                        records: records
+                    ),
+                    subject: Text(verbatim: "\(title) — \(processName)")
+                ) {
+                    Label("Share", systemImage: "square.and.arrow.up")
+                }
+                .disabled(isEmpty)
+            }
+        } label: {
+            Image(systemName: "ellipsis.circle")
+        }
+        .disabled(!isAvailable)
     }
 }
 

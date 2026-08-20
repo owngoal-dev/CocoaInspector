@@ -40,7 +40,21 @@ struct ProcessDetailView: View {
         .navigationTitle(row.displayName)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) { optionsMenu }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                ProcessDetailOptionsMenu(
+                    identity: identity,
+                    displayName: row.displayName,
+                    canSendSignal: record.pid > 1 && !hasExited,
+                    isSendingSignal: isSendingSignal,
+                    isExporting: isExporting,
+                    export: { Task { await exportDetails() } },
+                    selectSignal: { signal in
+                        pendingSignal = signal
+                        isConfirmingSignal = true
+                    }
+                )
+                .equatable()
+            }
         }
         .task { await loadSummary() }
         .refreshable { await loadSummary() }
@@ -81,40 +95,6 @@ struct ProcessDetailView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(signalFailure ?? String(localized: "Something unexpected went wrong."))
-        }
-    }
-
-    private var optionsMenu: some View {
-        Menu {
-            Button {
-                Task { await exportDetails() }
-            } label: {
-                Label("Export as Property List", systemImage: "square.and.arrow.up")
-            }
-            .disabled(isExporting)
-            if record.pid > 1, !hasExited {
-                Section {
-                    Button(role: .destructive) {
-                        pendingSignal = .terminate
-                        isConfirmingSignal = true
-                    } label: {
-                        Label("Ask It to Quit", systemImage: "stop.circle")
-                    }
-                    Button(role: .destructive) {
-                        pendingSignal = .forceKill
-                        isConfirmingSignal = true
-                    } label: {
-                        Label("Force Quit", systemImage: "xmark.octagon")
-                    }
-                }
-                .disabled(isSendingSignal)
-            }
-        } label: {
-            if isExporting {
-                ProgressView()
-            } else {
-                Image(systemName: "ellipsis.circle")
-            }
         }
     }
 
@@ -222,16 +202,32 @@ struct ProcessDetailView: View {
     private var detailLinksSection: some View {
         Section("More Details") {
             NavigationLink("Threads") {
-                ProcessDetailListView(kind: .threads, identity: identity)
+                ProcessDetailListView(
+                    kind: .threads,
+                    identity: identity,
+                    processName: row.displayName
+                )
             }
             NavigationLink("Open Files") {
-                ProcessDetailListView(kind: .files, identity: identity)
+                ProcessDetailListView(
+                    kind: .files,
+                    identity: identity,
+                    processName: row.displayName
+                )
             }
             NavigationLink("Mach Ports") {
-                ProcessDetailListView(kind: .ports, identity: identity)
+                ProcessDetailListView(
+                    kind: .ports,
+                    identity: identity,
+                    processName: row.displayName
+                )
             }
             NavigationLink("Loaded Modules") {
-                ProcessDetailListView(kind: .modules, identity: identity)
+                ProcessDetailListView(
+                    kind: .modules,
+                    identity: identity,
+                    processName: row.displayName
+                )
             }
         }
     }
@@ -282,6 +278,56 @@ struct ProcessDetailView: View {
         } catch {
             signalFailure = InspectorErrorText.describe(error)
             isShowingSignalFailure = true
+        }
+    }
+}
+
+// Live process samples redraw the surrounding detail screen, but this menu is
+// only affected when one of its own capabilities or progress states changes.
+private struct ProcessDetailOptionsMenu: View, Equatable {
+    let identity: ProcessIdentity
+    let displayName: String
+    let canSendSignal: Bool
+    let isSendingSignal: Bool
+    let isExporting: Bool
+    let export: () -> Void
+    let selectSignal: (InspectorSignal) -> Void
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.identity == rhs.identity
+            && lhs.displayName == rhs.displayName
+            && lhs.canSendSignal == rhs.canSendSignal
+            && lhs.isSendingSignal == rhs.isSendingSignal
+            && lhs.isExporting == rhs.isExporting
+    }
+
+    var body: some View {
+        Menu {
+            Button(action: export) {
+                Label("Export as Property List", systemImage: "square.and.arrow.up")
+            }
+            .disabled(isExporting)
+            if canSendSignal {
+                Section {
+                    Button(role: .destructive) {
+                        selectSignal(.terminate)
+                    } label: {
+                        Label("Ask It to Quit", systemImage: "stop.circle")
+                    }
+                    Button(role: .destructive) {
+                        selectSignal(.forceKill)
+                    } label: {
+                        Label("Force Quit", systemImage: "xmark.octagon")
+                    }
+                }
+                .disabled(isSendingSignal)
+            }
+        } label: {
+            if isExporting {
+                ProgressView()
+            } else {
+                Image(systemName: "ellipsis.circle")
+            }
         }
     }
 }

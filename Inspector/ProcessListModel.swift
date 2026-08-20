@@ -80,6 +80,9 @@ enum ProcessScopeFilter: String, CaseIterable, Identifiable {
 
     var id: Self { self }
 
+    private static let rootUserID = UserAccountResolver.shared.id(for: "root")
+    private static let mobileUserID = UserAccountResolver.shared.id(for: "mobile")
+
     var label: String {
         switch self {
         case .all: String(localized: "Everything")
@@ -92,8 +95,10 @@ enum ProcessScopeFilter: String, CaseIterable, Identifiable {
     func matches(_ row: ProcessRow) -> Bool {
         switch self {
         case .all: true
-        case .root: row.record.userID == 0
-        case .mobile: row.record.userID == 501
+        case .root:
+            Self.rootUserID.map { row.record.userID == $0 } ?? false
+        case .mobile:
+            Self.mobileUserID.map { row.record.userID == $0 } ?? false
         case .apps: row.isApp
         }
     }
