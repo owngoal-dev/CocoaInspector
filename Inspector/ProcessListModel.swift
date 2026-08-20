@@ -1,3 +1,5 @@
+import Combine
+import Foundation
 import SwiftUI
 
 struct ProcessRow: Identifiable, Equatable {
@@ -136,8 +138,7 @@ struct PreparedSample: Sendable {
 }
 
 @MainActor
-@Observable
-final class ProcessListModel {
+final class ProcessListModel: ObservableObject {
     enum Phase: Equatable {
         case idle
         case connecting
@@ -145,53 +146,78 @@ final class ProcessListModel {
         case failed(String)
     }
 
-    private(set) var phase: Phase = .idle
-    private(set) var rows: [ProcessRow] = []
+    // Publishing one aggregate value keeps a sample atomic from SwiftUI's
+    // perspective. Publishing every field separately would invalidate the
+    // 400-row list several times for each one-second sample on iOS 16.
+    private struct ViewState {
+        var phase: Phase = .idle
+        var rows: [ProcessRow] = []
+        var rowsByIdentity: [ProcessIdentity: ProcessRow] = [:]
+        var visibleRows: [ProcessRow] = []
+        var system = SystemRecord()
+        var totalCPUFraction: Double = 0
+        var uptimeNanoseconds: UInt64 = 0
+        var machTimebaseNumerator: UInt32 = 1
+        var machTimebaseDenominator: UInt32 = 1
+        var sortOrder: ProcessSortOrder
+        var scopeFilter: ProcessScopeFilter
+        var searchText = ""
+        var isPaused = false
+    }
+
+    private static let sortOrderKey = "processList.sortOrder"
+    private static let scopeFilterKey = "processList.scopeFilter"
+
+    @Published private var viewState: ViewState
+    private let defaults: UserDefaults
+
+    private(set) var phase: Phase {
+        get { viewState.phase }
+        set { viewState.phase = newValue }
+    }
+    var rows: [ProcessRow] { viewState.rows }
     // Filtering and sorting happen once per sample or query change, never in a
     // view body — bodies re-run every second and must stay O(visible rows).
-    private(set) var visibleRows: [ProcessRow] = []
-    private(set) var system = SystemRecord()
-    private(set) var totalCPUFraction: Double = 0
-    private(set) var uptimeNanoseconds: UInt64 = 0
-    private(set) var machTimebaseNumerator: UInt32 = 1
-    private(set) var machTimebaseDenominator: UInt32 = 1
-
-    // @AppStorage owns persistence; access/withMutation re-attach Observation
-    // tracking that @ObservationIgnored (required for property wrappers in
-    // @Observable types) would otherwise sever.
-    @ObservationIgnored
-    @AppStorage("processList.sortOrder") private var storedSortOrder: ProcessSortOrder = .cpu
-    @ObservationIgnored
-    @AppStorage("processList.scopeFilter") private var storedScopeFilter: ProcessScopeFilter = .all
+    var visibleRows: [ProcessRow] { viewState.visibleRows }
+    var system: SystemRecord { viewState.system }
+    var totalCPUFraction: Double { viewState.totalCPUFraction }
+    var uptimeNanoseconds: UInt64 { viewState.uptimeNanoseconds }
+    var machTimebaseNumerator: UInt32 { viewState.machTimebaseNumerator }
+    var machTimebaseDenominator: UInt32 { viewState.machTimebaseDenominator }
 
     var sortOrder: ProcessSortOrder {
-        get {
-            access(keyPath: \.sortOrder)
-            return storedSortOrder
-        }
+        get { viewState.sortOrder }
         set {
-            withMutation(keyPath: \.sortOrder) { storedSortOrder = newValue }
-            rebuildVisibleRows()
+            guard newValue != viewState.sortOrder else { return }
+            defaults.set(newValue.rawValue, forKey: Self.sortOrderKey)
+            rebuildVisibleRows { $0.sortOrder = newValue }
         }
     }
     var scopeFilter: ProcessScopeFilter {
-        get {
-            access(keyPath: \.scopeFilter)
-            return storedScopeFilter
-        }
+        get { viewState.scopeFilter }
         set {
-            withMutation(keyPath: \.scopeFilter) { storedScopeFilter = newValue }
-            rebuildVisibleRows()
+            guard newValue != viewState.scopeFilter else { return }
+            defaults.set(newValue.rawValue, forKey: Self.scopeFilterKey)
+            rebuildVisibleRows { $0.scopeFilter = newValue }
         }
     }
-    var searchText = "" {
-        didSet { rebuildVisibleRows() }
+    var searchText: String {
+        get { viewState.searchText }
+        set {
+            guard newValue != viewState.searchText else { return }
+            rebuildVisibleRows { $0.searchText = newValue }
+        }
     }
     // Pausing keeps the last snapshot on screen but releases the daemon (the
     // sampling loop deactivates on exit, so the foreground lease lapses).
-    var isPaused = false {
-        didSet {
-            if isPaused {
+    var isPaused: Bool {
+        get { viewState.isPaused }
+        set {
+            guard newValue != viewState.isPaused else { return }
+            var next = viewState
+            next.isPaused = newValue
+            viewState = next
+            if newValue {
                 samplingTask?.cancel()
             } else {
                 ensureSampling()
@@ -200,15 +226,21 @@ final class ProcessListModel {
     }
 
     private let session = ProcessDataSession()
-    // Observable (not @ObservationIgnored): the detail view's live lookups
-    // depend on this being tracked so each sample re-renders it.
-    private var rowsByIdentity: [ProcessIdentity: ProcessRow] = [:]
-    @ObservationIgnored private var shouldRun = false
-    @ObservationIgnored private var samplingTask: Task<Void, Never>?
-    @ObservationIgnored private var operationChain: Task<Void, Never> = Task {}
+    private var shouldRun = false
+    private var samplingTask: Task<Void, Never>?
+    private var operationChain: Task<Void, Never> = Task {}
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        let sortOrder = defaults.string(forKey: Self.sortOrderKey)
+            .flatMap(ProcessSortOrder.init(rawValue:)) ?? .cpu
+        let scopeFilter = defaults.string(forKey: Self.scopeFilterKey)
+            .flatMap(ProcessScopeFilter.init(rawValue:)) ?? .all
+        viewState = ViewState(sortOrder: sortOrder, scopeFilter: scopeFilter)
+    }
 
     func row(for identity: ProcessIdentity) -> ProcessRow? {
-        rowsByIdentity[identity]
+        viewState.rowsByIdentity[identity]
     }
 
     func start() {
@@ -281,21 +313,25 @@ final class ProcessListModel {
     }
 
     private func apply(_ prepared: PreparedSample) {
-        rows = prepared.rows
-        rowsByIdentity = prepared.rowsByIdentity
-        visibleRows = prepared.visibleRows
-        totalCPUFraction = prepared.totalCPUFraction
-        system = prepared.system
-        uptimeNanoseconds = prepared.uptimeNanoseconds
-        machTimebaseNumerator = prepared.machTimebaseNumerator
-        machTimebaseDenominator = prepared.machTimebaseDenominator
+        var next = viewState
+        next.rows = prepared.rows
+        next.rowsByIdentity = prepared.rowsByIdentity
+        next.visibleRows = prepared.visibleRows
+        next.totalCPUFraction = prepared.totalCPUFraction
+        next.system = prepared.system
+        next.uptimeNanoseconds = prepared.uptimeNanoseconds
+        next.machTimebaseNumerator = prepared.machTimebaseNumerator
+        next.machTimebaseDenominator = prepared.machTimebaseDenominator
+        viewState = next
     }
 
     private func clearRows() {
-        rows = []
-        rowsByIdentity = [:]
-        visibleRows = []
-        totalCPUFraction = 0
+        var next = viewState
+        next.rows = []
+        next.rowsByIdentity = [:]
+        next.visibleRows = []
+        next.totalCPUFraction = 0
+        viewState = next
     }
 
     // Interactive changes (search, sort, filter) rebuild on the main actor from
@@ -303,9 +339,17 @@ final class ProcessListModel {
     // apply(_:)): animating every sample kept the 400-row list in continuous
     // batch-update animations, which let taps land on rows mid-move and held
     // extra cells alive for the duration of each move.
-    private func rebuildVisibleRows() {
-        withAnimation(.smooth) {
-            visibleRows = Self.visibleRows(in: rows, scope: scopeFilter, order: sortOrder, query: searchText)
+    private func rebuildVisibleRows(_ update: (inout ViewState) -> Void) {
+        var next = viewState
+        update(&next)
+        next.visibleRows = Self.visibleRows(
+            in: next.rows,
+            scope: next.scopeFilter,
+            order: next.sortOrder,
+            query: next.searchText
+        )
+        withAnimation(.easeInOut(duration: 0.2)) {
+            viewState = next
         }
     }
 

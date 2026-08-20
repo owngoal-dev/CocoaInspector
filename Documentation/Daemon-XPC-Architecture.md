@@ -1,6 +1,6 @@
 # CCPI Swift LaunchDaemon / XPC 架构调查
 
-本文定义 CCPI 在 iOS 17.3.1 + roothide 环境中的进程边界、XPC 安全边界、按需采样生命周期和 jetsam/内存约束。当前实现遵循“最小状态、先测量再加复杂度”：XPC connection 已提供的身份和 request/reply 关联不再用 nonce、sequence、request ID 或 CDHash policy 重复表达。
+本文定义 CCPI 在 iOS 16.0+ 越狱环境中的进程边界、XPC 安全边界、按需采样生命周期和 jetsam/内存约束。已有完整实机验证基线仍是 iOS 17.3.1 + roothide；iOS 16.x 发布前必须重跑第 13 节清单。当前实现遵循“最小状态、先测量再加复杂度”：XPC connection 已提供的身份和 request/reply 关联不再用 nonce、sequence、request ID 或 CDHash policy 重复表达。
 
 ## 目标和硬约束
 

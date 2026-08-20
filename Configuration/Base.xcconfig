@@ -1,5 +1,8 @@
 #include "Version.xcconfig"
 
+// Single source of truth for the minimum OS across every product target.
+IPHONEOS_DEPLOYMENT_TARGET = 16.0
+
 // Optional DEVELOPMENT_TEAM / CODE_SIGN_STYLE live in the git-ignored
 // Developer*.xcconfig overlays. See Developer.xcconfig.example.
 //

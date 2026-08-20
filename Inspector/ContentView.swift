@@ -9,7 +9,7 @@ import SwiftUI
 import UIKit
 
 struct ContentView: View {
-    @State private var model = ProcessListModel()
+    @StateObject private var model = ProcessListModel()
     @State private var signalTarget: ProcessRow?
     @State private var signalFailure: String?
     @State private var isShowingSignalFailure = false
@@ -23,7 +23,6 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
-        @Bindable var model = model
         NavigationSplitView(columnVisibility: $columnVisibility) {
             List(selection: $selection) {
                 processSection
@@ -33,8 +32,8 @@ struct ContentView: View {
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $model.searchText, prompt: "Search by name or PID")
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) { systemMenu }
-                ToolbarItem(placement: .topBarTrailing) { actionsMenu }
+                ToolbarItem(placement: .navigationBarLeading) { systemMenu }
+                ToolbarItem(placement: .navigationBarTrailing) { actionsMenu }
             }
             .overlay { overlayContent }
             .navigationSplitViewColumnWidth(min: 320, ideal: 380)
@@ -46,13 +45,13 @@ struct ContentView: View {
             }
         }
         .navigationSplitViewStyle(.balanced)
-        .onChange(of: selection) { _, newValue in
+        .onChange(of: selection) { newValue in
             guard let newValue else { return }
             if let row = model.row(for: newValue) {
                 openedRow = row
             }
         }
-        .environment(model)
+        .environmentObject(model)
         // Guarded on the scene being active: a locked-screen launch (uiopen,
         // prewarming) lands here with scenePhase already .background, so the
         // .background case below never fires and an unconditional start would
@@ -61,7 +60,7 @@ struct ContentView: View {
         .onAppear {
             if scenePhase == .active { model.start() }
         }
-        .onChange(of: scenePhase) { _, phase in
+        .onChange(of: scenePhase) { phase in
             switch phase {
             case .active: model.start()
             case .background: model.stop()
@@ -128,8 +127,7 @@ struct ContentView: View {
     }
 
     private var actionsMenu: some View {
-        @Bindable var model = model
-        return Menu {
+        Menu {
             Toggle(isOn: $model.isPaused) {
                 Label("Pause Live Updates", systemImage: "pause.circle")
             }
@@ -253,11 +251,11 @@ struct ContentView: View {
             ProcessDetailView(row: row)
                 .id(selection)
         } else {
-            ContentUnavailableView(
-                "Select a Process",
-                systemImage: "square.stack.3d.up",
-                description: Text("Choose a process on the left to see what it’s up to.")
-            )
+            InspectorUnavailableView {
+                Label("Select a Process", systemImage: "square.stack.3d.up")
+            } description: {
+                Text("Choose a process on the left to see what it’s up to.")
+            }
         }
     }
 
@@ -266,7 +264,7 @@ struct ContentView: View {
         case .connecting where model.rows.isEmpty:
             ProgressView("Connecting to the inspector service…")
         case .failed(let message):
-            ContentUnavailableView {
+            InspectorUnavailableView {
                 Label("Can’t Connect", systemImage: "bolt.slash")
             } description: {
                 Text(message)
@@ -275,15 +273,19 @@ struct ContentView: View {
             }
         case .active where !model.rows.isEmpty && model.visibleRows.isEmpty:
             if model.searchText.isEmpty {
-                ContentUnavailableView(
-                    "Nothing to Show",
-                    systemImage: "line.3.horizontal.decrease.circle",
-                    description: Text(
+                InspectorUnavailableView {
+                    Label("Nothing to Show", systemImage: "line.3.horizontal.decrease.circle")
+                } description: {
+                    Text(
                         "No process matches the “\(model.scopeFilter.label)” filter right now."
                     )
-                )
+                }
             } else {
-                ContentUnavailableView.search(text: model.searchText)
+                InspectorUnavailableView {
+                    Label("No Results", systemImage: "magnifyingglass")
+                } description: {
+                    Text("No processes match “\(model.searchText)”.")
+                }
             }
         default:
             EmptyView()

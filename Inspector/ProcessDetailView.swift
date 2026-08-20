@@ -4,7 +4,7 @@ import UIKit
 struct ProcessDetailView: View {
     let row: ProcessRow
 
-    @Environment(ProcessListModel.self) private var model
+    @EnvironmentObject private var model: ProcessListModel
     @Environment(\.dismiss) private var dismiss
     @State private var summary: ProcessDetailSnapshot?
     @State private var summaryFailure: String?
@@ -40,7 +40,7 @@ struct ProcessDetailView: View {
         .navigationTitle(row.displayName)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) { optionsMenu }
+            ToolbarItem(placement: .navigationBarTrailing) { optionsMenu }
         }
         .task { await loadSummary() }
         .refreshable { await loadSummary() }

@@ -1,6 +1,6 @@
 # CocoaInspector
 
-Live process inspector for jailbroken iOS — [roothide](https://github.com/roothide) and rootless (`/var/jb`).
+Live process inspector for jailbroken iOS 16.0 or newer — [roothide](https://github.com/roothide) and rootless (`/var/jb`).
 
 SwiftUI app (`Inspector/`), root LaunchDaemon (`CocoaInspectord/`), CLI (`CocoaInspectorCLI/`), and a shared XPC data layer (`Shared/`, `InspectorClient/`). The daemon samples only while an authenticated client holds a foreground lease. Clients can list processes, open per-process detail views, export snapshots, and send two-phase `SIGTERM` / `SIGKILL`.
 
@@ -10,9 +10,9 @@ License: [MIT](LICENSE).
 
 ## Requirements
 
-- macOS with Xcode 16 or newer (iOS 17 SDK); CI builds on the `macos-26` GitHub-hosted runner
+- macOS with Xcode 16 or newer; CI builds on the `macos-26` GitHub-hosted runner
 - `ldid`, `dpkg-deb` (for packaging)
-- A jailbroken device to install and run the package: roothide, or a rootless jailbreak that installs under `/var/jb`
+- A jailbroken device running iOS 16.0 or newer: roothide, or a rootless jailbreak that installs under `/var/jb`
 
 ## Build
 

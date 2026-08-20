@@ -29,5 +29,5 @@ Maintainer: OwnGoal Studio <not-gonna-reply@owngoal.dev>
 Author: OwnGoal Studio <not-gonna-reply@owngoal.dev>
 Section: Utilities
 Priority: optional
-Depends: firmware (>= 17.0), uikittools, launchctl
+Depends: firmware (>= 16.0), uikittools, launchctl
 Installed-Size: @INSTALLED_SIZE@

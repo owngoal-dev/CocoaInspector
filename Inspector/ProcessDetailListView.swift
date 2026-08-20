@@ -5,7 +5,7 @@ struct ProcessDetailListView: View {
     let kind: ProcessDetailKind
     let identity: ProcessIdentity
 
-    @Environment(ProcessListModel.self) private var model
+    @EnvironmentObject private var model: ProcessListModel
     @State private var detail: ProcessDetailSnapshot?
     // Filtering and sorting run once per load, query, or order change — never
     // in a view body, which re-runs far more often than the data changes.
@@ -82,14 +82,14 @@ struct ProcessDetailListView: View {
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $searchText, prompt: searchPrompt)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) { optionsMenu }
+            ToolbarItem(placement: .navigationBarTrailing) { optionsMenu }
         }
         .overlay { overlayContent }
         .sheet(item: $inspected) { RowInspectionSheet(inspection: $0) }
         .task { await load() }
         .refreshable { await load() }
-        .onChange(of: searchText) { rebuildVisible() }
-        .onChange(of: sort) { rebuildVisible() }
+        .onChange(of: searchText) { _ in rebuildVisible() }
+        .onChange(of: sort) { _ in rebuildVisible() }
     }
 
     @ViewBuilder private var optionsMenu: some View {
@@ -189,7 +189,7 @@ struct ProcessDetailListView: View {
 
     @ViewBuilder private var overlayContent: some View {
         if let failure {
-            ContentUnavailableView {
+            InspectorUnavailableView {
                 Label("Couldn’t Load This", systemImage: "exclamationmark.triangle")
             } description: {
                 Text(failure)
@@ -198,9 +198,15 @@ struct ProcessDetailListView: View {
             }
         } else if let detail {
             if ProcessDetailRecords.total(in: detail, kind: kind) == 0 {
-                ContentUnavailableView("Nothing Here Yet", systemImage: "tray")
+                InspectorUnavailableView {
+                    Label("Nothing Here Yet", systemImage: "tray")
+                }
             } else if visible.isEmpty {
-                ContentUnavailableView.search(text: searchText)
+                InspectorUnavailableView {
+                    Label("No Results", systemImage: "magnifyingglass")
+                } description: {
+                    Text("Nothing matches “\(searchText)”.")
+                }
             }
         } else {
             ProgressView()
@@ -269,12 +275,12 @@ private struct RowInspectionSheet: View {
             .navigationTitle(inspection.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button("Copy", systemImage: "doc.on.doc") {
                         UIPasteboard.general.string = inspection.text
                     }
                 }
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") { dismiss() }
                 }
             }
