@@ -280,7 +280,9 @@ final class ProcessListModel: ObservableObject {
 
     private func ensureSampling() {
         guard shouldRun, !isPaused, samplingTask == nil else { return }
-        samplingTask = Task { await runSampling() }
+        // Sampling is background UI work. Keeping it below user-initiated
+        // scrolling lets the main actor service gestures and layout first.
+        samplingTask = Task(priority: .utility) { await runSampling() }
     }
 
     private func runSampling() async {
@@ -301,8 +303,9 @@ final class ProcessListModel: ObservableObject {
                     )
                     return PreparedSample(update: update, scope: scope, order: order, query: query)
                 }
+                guard !Task.isCancelled else { break }
                 apply(prepared)
-                try? await Task.sleep(for: .seconds(1))
+                await waitForNextSample()
             }
         } catch {
             if !Task.isCancelled {
@@ -315,6 +318,24 @@ final class ProcessListModel: ObservableObject {
         if phase == .active || phase == .connecting { phase = .idle }
         samplingTask = nil
         ensureSampling()
+    }
+
+    // Task.sleep resumes independently of the main RunLoop mode, which lets a
+    // sample invalidate every visible List while UIScrollView is tracking a
+    // gesture. A default-mode timer is deferred during UI tracking and resumes
+    // sampling after scrolling yields the RunLoop back to normal UI work.
+    private func waitForNextSample() async {
+        let ticks = Timer.publish(
+            every: 1,
+            tolerance: 0.1,
+            on: .main,
+            in: .default
+        )
+        .autoconnect()
+        .values
+        for await _ in ticks {
+            break
+        }
     }
 
     private func apply(_ prepared: PreparedSample) {
