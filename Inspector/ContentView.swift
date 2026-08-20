@@ -106,7 +106,11 @@ struct ContentView: View {
                 )
             }
         } label: {
-            Image(systemName: "gauge.with.needle")
+            if #available(iOS 17.0, *) {
+                Label("System Stats", systemImage: "gauge.with.needle")
+            } else {
+                Label("System Stats", systemImage: "gauge")
+            }
         }
         .disabled(model.rows.isEmpty)
     }

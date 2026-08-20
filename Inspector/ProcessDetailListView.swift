@@ -101,7 +101,7 @@ struct ProcessDetailListView: View {
                         process: processName,
                         records: visible
                     ),
-                    subject: Text("\(title) — \(processName)")
+                    subject: Text(verbatim: "\(title) — \(processName)")
                 ) {
                     Label("Share", systemImage: "square.and.arrow.up")
                 }

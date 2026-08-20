@@ -47,52 +47,6 @@
         }
       }
     },
-    "%@ · priority %d": {
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$@ · الأولوية %2$d"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$@ · Priorität %2$d"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$@ · prioridad %2$d"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$@ · priorité %2$d"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$@ · 優先度 %2$d"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$@ · приоритет %2$d"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$@ · 优先级 %2$d"
-          }
-        }
-      }
-    },
     "%lld (%lld running)": {
       "localizations": {
         "ar": {
@@ -445,52 +399,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "共 %lld 项"
-          }
-        }
-      }
-    },
-    "%lld members": {
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld أعضاء"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld Mitglieder"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld miembros"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld membres"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "メンバー %lld"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "элементов: %lld"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld 个成员"
           }
         }
       }
@@ -1667,6 +1575,52 @@
         }
       }
     },
+    "Choose a process on the left to see what it’s up to.": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اختر عملية على اليسار لمعرفة ما تقوم به."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wähle links einen Prozess aus, um seine Aktivität anzuzeigen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selecciona un proceso a la izquierda para ver qué está haciendo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sélectionnez un processus à gauche pour voir son activité."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "左側でプロセスを選択すると、その動作を確認できます。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите процесс слева, чтобы посмотреть, что он делает."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在左侧选择一个进程以查看其活动。"
+          }
+        }
+      }
+    },
     "Connecting to the inspector service…": {
       "localizations": {
         "ar": {
@@ -2541,48 +2495,48 @@
         }
       }
     },
-    "File Descriptor %lld": {
+    "File Descriptor %d": {
       "localizations": {
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "واصف الملف %lld"
+            "value": "واصف الملف %d"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dateideskriptor %lld"
+            "value": "Dateideskriptor %d"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Descriptor de archivo %lld"
+            "value": "Descriptor de archivo %d"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Descripteur de fichier %lld"
+            "value": "Descripteur de fichier %d"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ファイル記述子 %lld"
+            "value": "ファイル記述子 %d"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Дескриптор файла %lld"
+            "value": "Дескриптор файла %d"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "文件描述符 %lld"
+            "value": "文件描述符 %d"
           }
         }
       }
@@ -5623,6 +5577,52 @@
         }
       }
     },
+    "Select a Process": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اختر عملية"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prozess auswählen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selecciona un proceso"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sélectionnez un processus"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "プロセスを選択"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите процесс"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择一个进程"
+          }
+        }
+      }
+    },
     "Share": {
       "localizations": {
         "ar": {
@@ -6401,6 +6401,52 @@
           "stringUnit": {
             "state": "translated",
             "value": "系统（root）"
+          }
+        }
+      }
+    },
+    "System Stats": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إحصاءات النظام"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Systemstatistiken"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estadísticas del sistema"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Statistiques système"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "システム統計"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Статистика системы"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "系统统计"
           }
         }
       }
@@ -7919,144 +7965,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "错误 %lld"
-          }
-        }
-      }
-    },
-    "fd %d · %@": {
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "fd %1$d · %2$@"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "fd %1$d · %2$@"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "fd %1$d · %2$@"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "fd %1$d · %2$@"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "fd %1$d · %2$@"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "fd %1$d · %2$@"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "fd %1$d · %2$@"
-          }
-        }
-      }
-    },
-    "kobject %lld": {
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "kobject %lld"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "kobject %lld"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "kobject %lld"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "kobject %lld"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "kobject %lld"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "kobject %lld"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "kobject %lld"
-          }
-        }
-      }
-    },
-    "refs %u": {
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "مراجع %u"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Refs %u"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "refs %u"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "réf. %u"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "参照 %u"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ссылок: %u"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "引用 %u"
           }
         }
       }
