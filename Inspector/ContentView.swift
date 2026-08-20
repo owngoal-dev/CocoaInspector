@@ -317,10 +317,17 @@ private struct SystemStatsMenuButton: UIViewRepresentable {
             ]
         }
 
-        private func stat(_ title: String, value: String, icon: String) -> UIAction {
-            UIAction(title: "\(title) · \(value)", image: UIImage(systemName: icon)) { _ in
-                UIPasteboard.general.string = "\(title): \(value)"
+        private func stat(
+            _ title: LocalizedStringResource,
+            value: String,
+            icon: String
+        ) -> UIAction {
+            let localizedTitle = String(localized: title)
+            let action = UIAction(title: localizedTitle, image: UIImage(systemName: icon)) { _ in
+                UIPasteboard.general.string = "\(localizedTitle): \(value)"
             }
+            action.subtitle = value
+            return action
         }
     }
 }
