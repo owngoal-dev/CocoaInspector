@@ -150,14 +150,14 @@ struct ProcessDetailView: View {
                     denominator: model.machTimebaseDenominator
                 )
             )
-            LabeledContent("Memory Footprint", value: InspectorFormat.bytes(stats.physicalFootprint))
-            LabeledContent("Resident Memory", value: InspectorFormat.bytes(stats.residentSize))
-            LabeledContent("Virtual Memory", value: InspectorFormat.bytes(stats.virtualSize))
-            LabeledContent("Read from Disk", value: InspectorFormat.bytes(stats.diskBytesRead))
-            LabeledContent("Written to Disk", value: InspectorFormat.bytes(stats.diskBytesWritten))
+            LabeledContent("Memory Footprint", value: InspectorFormat.memoryBytes(stats.physicalFootprint))
+            LabeledContent("Resident Memory", value: InspectorFormat.memoryBytes(stats.residentSize))
+            LabeledContent("Virtual Memory", value: InspectorFormat.memoryBytes(stats.virtualSize))
+            LabeledContent("Read from Disk", value: InspectorFormat.dataBytes(stats.diskBytesRead))
+            LabeledContent("Written to Disk", value: InspectorFormat.dataBytes(stats.diskBytesWritten))
             if record.availability.contains(.network) {
-                LabeledContent("Downloaded", value: InspectorFormat.bytes(record.networkBytesReceived))
-                LabeledContent("Uploaded", value: InspectorFormat.bytes(record.networkBytesSent))
+                LabeledContent("Downloaded", value: InspectorFormat.dataBytes(record.networkBytesReceived))
+                LabeledContent("Uploaded", value: InspectorFormat.dataBytes(record.networkBytesSent))
             }
         }
     }

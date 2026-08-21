@@ -112,7 +112,7 @@ struct ContentView: View {
         let freeMemory = model.system.freeMemory
         let usedMemory = totalMemory > freeMemory ? totalMemory - freeMemory : 0
         let memory = String(
-            localized: "\(InspectorFormat.bytes(usedMemory)) of \(InspectorFormat.bytes(totalMemory)) in use"
+            localized: "\(InspectorFormat.memoryBytes(usedMemory)) of \(InspectorFormat.memoryBytes(totalMemory)) in use"
         )
         let processCount = model.rows.count
         let threadCount = Int(model.system.totalThreadCount)
@@ -413,7 +413,7 @@ private struct ProcessRowView: View {
                 Text(InspectorFormat.percent(row.cpuFraction))
                     .monospacedDigit()
                     .foregroundStyle(row.cpuFraction > 0.005 ? .primary : .secondary)
-                Text(InspectorFormat.bytes(row.record.physicalFootprint))
+                Text(InspectorFormat.memoryBytes(row.record.physicalFootprint))
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .monospacedDigit()

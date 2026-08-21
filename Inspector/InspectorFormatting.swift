@@ -1,8 +1,12 @@
 import Foundation
 
 enum InspectorFormat {
-    static func bytes(_ value: UInt64) -> String {
+    static func memoryBytes(_ value: UInt64) -> String {
         Int64(clamping: value).formatted(.byteCount(style: .memory))
+    }
+
+    static func dataBytes(_ value: UInt64) -> String {
+        Int64(clamping: value).formatted(.byteCount(style: .file))
     }
 
     static func percent(_ fraction: Double) -> String {

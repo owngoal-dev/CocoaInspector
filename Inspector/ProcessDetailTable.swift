@@ -129,7 +129,7 @@ enum ProcessDetailTable {
         [
             ProcessDetailRecords.moduleName(module),
             InspectorFormat.hex(module.address),
-            module.size > 0 ? InspectorFormat.bytes(module.size) : "—",
+            module.size > 0 ? InspectorFormat.memoryBytes(module.size) : "—",
             "\(module.referenceCount)",
         ]
     }
@@ -266,7 +266,7 @@ extension DetailRowInspection {
         if module.size > 0 {
             fields.append(
                 DetailField(label: String(localized: "Size"),
-                    value: "\(InspectorFormat.bytes(module.size)) (\(module.size) bytes)"
+                    value: "\(InspectorFormat.memoryBytes(module.size)) (\(module.size) bytes)"
                 )
             )
         }

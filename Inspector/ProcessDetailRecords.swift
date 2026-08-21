@@ -359,7 +359,7 @@ enum ProcessDetailExport {
             ProcessDetailRecords.moduleName(module),
             InspectorFormat.hex(module.address),
         ]
-        if module.size > 0 { parts.append(InspectorFormat.bytes(module.size)) }
+        if module.size > 0 { parts.append(InspectorFormat.memoryBytes(module.size)) }
         if module.referenceCount > 0 { parts.append("refs \(module.referenceCount)") }
         if !module.path.isEmpty { parts.append(module.path) }
         return parts.joined(separator: " · ")
