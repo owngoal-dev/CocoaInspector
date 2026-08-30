@@ -35,6 +35,7 @@ struct ProcessDetailView: View {
             detailLinksSection
             resourceSection
             executableSection
+            commandLineSection
             bundleSection
         }
         .navigationTitle(row.displayName)
@@ -163,18 +164,21 @@ struct ProcessDetailView: View {
     }
 
     @ViewBuilder private var executableSection: some View {
-        if !record.executablePath.isEmpty || !record.arguments.isEmpty {
+        if !record.executablePath.isEmpty {
             Section("Executable") {
-                if !record.executablePath.isEmpty {
-                    Text(record.executablePath)
-                        .font(.footnote.monospaced())
-                        .textSelection(.enabled)
-                }
-                if !record.arguments.isEmpty {
-                    Text(record.arguments.joined(separator: " "))
-                        .font(.footnote.monospaced())
-                        .textSelection(.enabled)
-                }
+                Text(record.executablePath)
+                    .font(.footnote.monospaced())
+                    .textSelection(.enabled)
+            }
+        }
+    }
+
+    @ViewBuilder private var commandLineSection: some View {
+        if !record.arguments.isEmpty {
+            Section("Command Line") {
+                Text(record.arguments.joined(separator: " "))
+                    .font(.footnote.monospaced())
+                    .textSelection(.enabled)
             }
         }
     }
