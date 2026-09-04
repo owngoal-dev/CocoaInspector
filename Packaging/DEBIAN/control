@@ -25,7 +25,7 @@ Description: Live process inspector for @FLAVOR@ jailbreaks
  `cocoainspector` answers the same queries for scripting — `list`, `inspect`, `details`, `watch`, `signal`, and `self-test` — served by `cocoainspectord`, an on-demand LaunchDaemon that holds one session at a time.
  .
  Localized into English, Simplified Chinese, Japanese, Russian, German, French, Spanish, and Arabic.
-Icon: https://owngoalstudio.github.io/CocoaInspector/icon.png
+Icon: https://owngoal-dev.github.io/CocoaInspector/icon.png
 Maintainer: OwnGoal Studio <not-gonna-reply@owngoal.dev>
 Author: OwnGoal Studio <not-gonna-reply@owngoal.dev>
 Section: Utilities
