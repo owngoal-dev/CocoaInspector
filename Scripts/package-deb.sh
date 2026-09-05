@@ -2,6 +2,8 @@
 
 set -Eeuo pipefail
 
+repository_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
+
 if [[ "$#" -ne 14 ]]; then
     echo "usage: $0 <app> <daemon> <cli> <control> <app-entitlements> <daemon-entitlements> <cli-entitlements> <launch-plist> <output-deb> <package-id> <version> <architecture> <flavor> <install-prefix>" >&2
     exit 64
@@ -96,6 +98,17 @@ chmod 0644 "$installed_plist"
     echo "error: launch daemon plist does not point at the installed daemon" >&2
     exit 65
 }
+
+for binary in "$installed_app/$app_executable" "$installed_daemon" "$installed_cli"; do
+    /usr/bin/strip -xS "$binary"
+    for private_path in "$repository_root" "${GITHUB_WORKSPACE:-}" "${RUNNER_TEMP:-}"; do
+        [[ -z "$private_path" || "$private_path" == / ]] && continue
+        if LC_ALL=C grep -aF "$private_path" "$binary" >/dev/null; then
+            echo "error: $(basename "$binary") embeds a private build path" >&2
+            exit 65
+        fi
+    done
+done
 
 ldid -S"$app_entitlements" -Cadhoc "$installed_app/$app_executable"
 ldid -S"$daemon_entitlements" -Cadhoc "$installed_daemon"
