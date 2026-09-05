@@ -36,3 +36,15 @@ All process inspection and verification on the device MUST go through our own CL
 - `sudo /usr/bin/cocoainspector details <kind> <pid>`, `watch`, `signal`, `self-test`
 
 Dogfooding the CLI is the point: if it can't answer a question about a process, that's a product gap to fix, not a reason to shell out.
+
+## RootHide runtime dependency policy
+
+Evaluate official `libroothide`/`libvroot` before adding a new bootstrap path
+shim. This native app/daemon currently keeps a physical-path contract: process
+identity, filesystem decisions and Foundation must refer to the same path.
+Do not apply `symredirect` to only one side of that boundary. Packaging rejects
+an accidental vroot dependency on the native daemon. Both package layouts may
+reuse these native binaries; `libvroot` itself is RootHide-specific and is not
+made rootless-compatible by changing the Debian architecture label.
+References: `roothide/Developer`'s `vroot.md`, and `roothide/libroothide`'s
+`init.c` and `stub.h`. `libroot` is a separate Rootless v2 path API.

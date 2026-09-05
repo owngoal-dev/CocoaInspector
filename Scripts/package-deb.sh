@@ -38,6 +38,19 @@ case "$flavor" in
     *) echo "error: flavor must be roothide or rootless" >&2; exit 64 ;;
 esac
 
+case "$architecture:$install_prefix" in
+iphoneos-arm64:/var/jb | iphoneos-arm64e:) ;;
+*) echo "error: architecture and install prefix name different bootstrap layouts" >&2; exit 64 ;;
+esac
+
+# These native daemons make authorization/path decisions on physical paths.
+# Rewriting their libc imports independently would change that contract.
+native_dependencies="$(otool -L "$daemon_binary")"
+if grep -q 'libvroot' <<<"$native_dependencies"; then
+    echo "error: native daemon uses physical paths; unexpected vroot dependency" >&2
+    exit 65
+fi
+
 app_executable="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app_bundle/Info.plist")"
 bundle_identifier="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app_bundle/Info.plist")"
 [[ "$bundle_identifier" == wiki.qaq.Inspector && -x "$app_bundle/$app_executable" ]] || {
