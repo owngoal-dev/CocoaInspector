@@ -120,8 +120,10 @@ actor ApplicationIconProvider {
     }
 }
 
+// Pass nil for anything that isn't an app bundle: those rows get the Terminal
+// icon so every row shares the same leading inset.
 struct ProcessApplicationIcon: View, Equatable {
-    let executablePath: String
+    let executablePath: String?
 
     @Environment(\.displayScale) private var displayScale
     @State private var icon: UIImage?
@@ -140,6 +142,10 @@ struct ProcessApplicationIcon: View, Equatable {
                 Image(uiImage: icon)
                     .resizable()
                     .scaledToFill()
+            } else if executablePath == nil {
+                Image("TerminalIcon")
+                    .resizable()
+                    .scaledToFill()
             } else {
                 Image(systemName: "app.fill")
                     .font(.system(size: 17))
@@ -150,6 +156,7 @@ struct ProcessApplicationIcon: View, Equatable {
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .accessibilityHidden(true)
         .task(id: requestID) {
+            guard let executablePath else { return }
             icon = await ApplicationIconProvider.shared.icon(
                 for: executablePath,
                 scale: displayScale
@@ -158,6 +165,6 @@ struct ProcessApplicationIcon: View, Equatable {
     }
 
     private var requestID: String {
-        "\(executablePath)#\(displayScale)"
+        "\(executablePath ?? "")#\(displayScale)"
     }
 }

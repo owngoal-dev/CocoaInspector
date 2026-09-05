@@ -397,10 +397,10 @@ private struct ProcessRowView: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            if row.isApp {
-                ProcessApplicationIcon(executablePath: row.record.executablePath)
-                    .equatable()
-            }
+            ProcessApplicationIcon(
+                executablePath: row.isApp ? row.record.executablePath : nil
+            )
+            .equatable()
             VStack(alignment: .leading, spacing: 2) {
                 Text(row.displayName)
                     .lineLimit(1)
