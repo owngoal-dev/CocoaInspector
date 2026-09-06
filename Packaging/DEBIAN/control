@@ -3,28 +3,15 @@ Name: Inspector
 Version: @VERSION@
 Architecture: @ARCHITECTURE@
 Description: Live process inspector for @FLAVOR@ jailbreaks
- Inspector samples every process on the device once a second and shows what the system is really doing.
- .
- ### Process list
- .
- - CPU share, memory footprint, thread count, PID, and owning user, refreshed every second
- - Search by name or PID; sort by CPU, memory, PID, or name
- - Filter down to system (root), user (mobile), or app processes
- - Pause live updates to hold a moment still
- .
- ### Per-process detail
- .
- - Resource use: CPU time, memory footprint, resident and virtual size, disk and network I/O
- - Executable path, arguments, sandbox status, and app bundle metadata
- - Separate screens for threads, open files and sockets, Mach ports, and loaded modules — each with its own search, sort order, and share action
- - Export the complete detail set as a property list for later analysis
- - Ask a process to quit (SIGTERM), or force quit it (SIGKILL)
- .
- ### Command line
- .
- `cocoainspector` answers the same queries for scripting — `list`, `inspect`, `details`, `watch`, `signal`, and `self-test` — served by `cocoainspectord`, an on-demand LaunchDaemon that holds one session at a time.
- .
- Localized into English, Simplified Chinese, Japanese, Russian, German, French, Spanish, and Arabic.
+ See what your device is actually doing. Every running process, refreshed once a
+ second, with its CPU share, memory, thread count and owner. Search by name or
+ PID, sort by any column, filter down to system, user or app processes, and
+ pause the list to hold a moment still. Open a process for its threads, open
+ files and sockets, Mach ports, loaded modules, sandbox status and disk and
+ network use, then quit it, force quit it, or export the whole report. The
+ `cocoainspector` command answers the same questions from a terminal. Available
+ in English, Simplified Chinese, Japanese, Russian, German, French, Spanish and
+ Arabic.
 Icon: https://owngoal-dev.github.io/CocoaInspector/icon.png
 Maintainer: OwnGoal Studio <not-gonna-reply@owngoal.dev>
 Author: OwnGoal Studio <not-gonna-reply@owngoal.dev>
