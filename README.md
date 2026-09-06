@@ -1,66 +1,67 @@
-# CocoaInspector
+<p align="center">
+  <a href="README.md">English</a> |
+  <a href="README_zh-Hans.md">简体中文</a>
+</p>
 
-Live process inspector for jailbroken iOS 16.0 or newer — [roothide](https://github.com/roothide) and rootless (`/var/jb`).
+# Inspector
 
-SwiftUI app (`Inspector/`), root LaunchDaemon (`CocoaInspectord/`), CLI (`CocoaInspectorCLI/`), and a shared XPC data layer (`Shared/`, `InspectorClient/`). The daemon samples only on authenticated client requests; the app owns its XPC connection for its foreground lifetime, and the daemon exits after the last client disconnects. Clients can list processes, open per-process detail views, export snapshots, and send two-phase `SIGTERM` / `SIGKILL`.
+Inspect running processes on your jailbroken iPhone or iPad. Monitor CPU usage, memory, thread counts, and process owners in a live list, then open a process to inspect its threads, files, ports, and loaded modules.
 
-License: [MIT](LICENSE).
+![Preview](./Documents/screenshots.png)
 
-> Jailbreak-only. Uses private entitlements and APIs. Not for the App Store.
+## Install
 
-## Requirements
+Add the OwnGoal Studio repository in Sileo, Zebra, or another package manager:
 
-- macOS with Xcode 16 or newer; CI builds on the `macos-26` GitHub-hosted runner
-- `ldid`, `dpkg-deb` (for packaging)
-- A jailbroken device running iOS 16.0 or newer: roothide, or a rootless jailbreak that installs under `/var/jb`
+**[Add to Sileo](sileo://source/https://apt.owngoal.dev)** · [apt.owngoal.dev](https://apt.owngoal.dev/)
 
-## Build
+Packages are also on [GitHub Releases](https://github.com/owngoal-dev/CocoaInspector/releases). Choose the file that matches your jailbreak.
 
-```sh
-make build         # check + macOS harness + unsigned iOS targets
-make deb           # build, ad-hoc sign, package the roothide .deb (FLAVOR=roothide)
-make deb FLAVOR=rootless   # the same build, packaged for /var/jb
-make deb-all       # both packages
-make harness       # shared data-layer tests on macOS only
-```
+| Jailbreak | Package |
+| --- | --- |
+| [roothide](https://github.com/roothide) | `iphoneos-arm64e` |
+| Rootless (`/var/jb`) | `iphoneos-arm64` |
 
-Both flavors ship the identical arm64 Mach-Os; only the install layout differs.
+Requires iOS 16 or later. Inspector is not for the App Store.
 
-| FLAVOR | Architecture | Install prefix |
-| --- | --- | --- |
-| `roothide` (default) | `iphoneos-arm64e` | none — roothide's dpkg relocates into the randomized bootstrap root |
-| `rootless` | `iphoneos-arm64` | `/var/jb` |
+## Features
 
-`make deb` writes the package under `build/Packages` and verifies its layout with `Scripts/verify-deb.sh`. Path helper: `make print-deb-path [FLAVOR=rootless]`.
+- **Live process list**: View CPU usage, memory, thread counts, and process owners with updates every second. Pause updates to inspect the current list.
+- **Find a process**: Search by name or PID. Sort by CPU usage, memory, PID, or name. Filter to system, user, or app processes.
+- **Process details**: Threads, open files and sockets, Mach ports, loaded modules, sandbox status, and disk and network use.
+- **Stop a process**: Ask It to Quit or Force Quit from the detail screen. PID 1 cannot be stopped.
+- **Export**: Share a snapshot of a process as a file.
+- **Command line**: Inspect processes and monitor CPU usage from a terminal with `cocoainspector`.
 
-Optional local signing overrides go in git-ignored `Configuration/Developer*.xcconfig` (see `Configuration/Developer.xcconfig.example`).
-
-## Versioning
-
-`Configuration/Version.xcconfig` is the single source for app, daemon, CLI, and Debian package version:
+## Command Line
 
 ```sh
-make print-version
-make set-version VERSION=1.2.3 BUILD=7
-```
-
-Pushing a `vX.Y.Z` tag makes CI apply that version, build both packages, and publish a GitHub release with `SHA256SUMS`.
-
-## Install & verify
-
-Install the `.deb` matching your jailbreak (`iphoneos-arm64e` for roothide, `iphoneos-arm64` for rootless) with your package manager or `dpkg`. The archive contains `Inspector.app`, `usr/bin/cocoainspector`, `usr/libexec/cocoainspectord`, and an on-demand LaunchDaemon plist. On roothide those rootful paths are mapped into the randomized jailbreak root by the bootstrap; on rootless they ship under `/var/jb`. The daemon derives the install root from its own path, so client authentication works in both layouts.
-
-```sh
-sudo cocoainspector self-test
-sudo cocoainspector self-test --signal
 sudo cocoainspector list
 sudo cocoainspector inspect 1
 sudo cocoainspector details 1 all
 sudo cocoainspector watch --count 10 --interval-ms 1000
+sudo cocoainspector self-test
 ```
 
-The normal self-test is read-only. `--signal` creates and terminates only a child of the CLI so the two-phase signal path can be tested without selecting a system process.
+`self-test` is read-only. Add `--signal` only when you want to exercise Ask It to Quit and Force Quit on a child of the CLI — it does not target a system process.
 
-## Architecture notes
+On a rootless jailbreak, the tool is `/var/jb/usr/bin/cocoainspector`.
 
-Daemon / XPC auth, idle, signal, and jetsam rules: [Documents/Daemon-XPC-Architecture.md](Documents/Daemon-XPC-Architecture.md).
+## Build from Source
+
+Requires macOS with Xcode, `ldid`, and `dpkg-deb`.
+
+```sh
+make deb              # roothide
+make deb FLAVOR=rootless
+make deb-all          # both packages
+make harness          # data-layer tests on Mac
+```
+
+Contributor notes are in [AGENTS.md](AGENTS.md). Daemon design is in [Documents/Daemon-XPC-Architecture.md](Documents/Daemon-XPC-Architecture.md).
+
+## License
+
+Inspector is available under the [MIT License](LICENSE).
+
+Join the community on [Discord](https://discord.gg/vqhDEep2mN).
