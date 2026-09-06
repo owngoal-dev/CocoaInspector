@@ -63,4 +63,4 @@ The normal self-test is read-only. `--signal` creates and terminates only a chil
 
 ## Architecture notes
 
-Daemon / XPC auth, idle, signal, and jetsam rules: [Documentation/Daemon-XPC-Architecture.md](Documentation/Daemon-XPC-Architecture.md).
+Daemon / XPC auth, idle, signal, and jetsam rules: [Documents/Daemon-XPC-Architecture.md](Documents/Daemon-XPC-Architecture.md).
