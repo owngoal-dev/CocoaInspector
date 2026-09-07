@@ -4,7 +4,7 @@ iOS process inspector for roothide and rootless jailbreaks: SwiftUI app (`Inspec
 
 ## Build
 
-- `make build` — validates inputs (`check`), runs the macOS data-layer test harness (`harness`), then builds the unsigned iOS app + daemon + CLI via xcodebuild. Requires `xcodebuild`, `ldid`, `dpkg-deb`.
+- `make build` — validates inputs (`check`), runs the macOS data-layer test harness (`harness`), bumps `CURRENT_PROJECT_VERSION` (so `Version.xcconfig` comes out of a build dirty by design), then builds the unsigned iOS app + daemon + CLI via xcodebuild. Requires `xcodebuild`, `ldid`, `dpkg-deb`.
 - `make deb` — build + ad-hoc sign + package the `.deb` for `FLAVOR` (default `roothide`; `FLAVOR=rootless` installs under `/var/jb` as `iphoneos-arm64`), verify it with `Scripts/verify-deb.sh`, and print its sha256. Output path: `make print-deb-path [FLAVOR=rootless]`. `make deb-all` builds both.
 - Packaging inputs are templates: `@PREFIX@` in `Packaging/wiki.qaq.cocoainspectord.plist`, `DEBIAN/postinst`, and `DEBIAN/prerm` is substituted at package time (empty for roothide, `/var/jb` for rootless), and `@FLAVOR@` in `DEBIAN/control`. Never hardcode an install prefix in Swift — the daemon derives its install root from `proc_pidpath`.
 - `make harness` — run just the shared data-layer tests on macOS (fast; no device needed).
