@@ -3,6 +3,12 @@
 // Single source of truth for the minimum OS across every product target.
 IPHONEOS_DEPLOYMENT_TARGET = 16.0
 
+// CInspectorXPC/ is a header-only clang module holding the SDK's XPC_TYPE_*
+// macros as C functions. Naming those macros in Swift resolves them through
+// the SDK's XPC overlay and links /usr/lib/swift/libswiftXPC.dylib non-weakly,
+// which older systems do not have. See CInspectorXPC/module.modulemap.
+SWIFT_INCLUDE_PATHS = $(inherited) $(SRCROOT)/CInspectorXPC
+
 // Optional DEVELOPMENT_TEAM / CODE_SIGN_STYLE live in the git-ignored
 // Developer*.xcconfig overlays. See Developer.xcconfig.example.
 //

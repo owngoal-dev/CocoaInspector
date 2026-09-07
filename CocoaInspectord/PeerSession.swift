@@ -44,7 +44,7 @@ final class PeerSession {
 
     private func handle(_ request: xpc_object_t) {
         guard active,
-              xpc_get_type(request) == XPC_TYPE_DICTIONARY,
+              xpc_get_type(request) == InspectorXPC.typeDictionary,
               let reply = xpc_dictionary_create_reply(request) else {
             invalidate()
             return

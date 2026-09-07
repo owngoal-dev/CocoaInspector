@@ -46,7 +46,7 @@ final class DaemonServer {
     }
 
     private func accept(_ event: xpc_object_t) {
-        guard xpc_get_type(event) == XPC_TYPE_CONNECTION else { return }
+        guard xpc_get_type(event) == InspectorXPC.typeConnection else { return }
         guard let clientPID = authenticator.authenticate(event) else {
             xpc_connection_cancel(event)
             scheduleIdleExit()

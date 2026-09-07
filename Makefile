@@ -123,6 +123,13 @@ check:
 		|| { echo "error: Debian firmware dependency must match iOS $(MINIMUM_IOS_VERSION)" >&2; exit 65; }
 	@objver="$$(sed -n 's/^[[:space:]]*objectVersion = \([0-9]*\);.*/\1/p' "$(PROJECT)/project.pbxproj")"; \
 		[[ "$$objver" == "$(PROJECT_OBJECT_VERSION)" ]] || { echo "error: project.pbxproj objectVersion must stay $(PROJECT_OBJECT_VERSION) so Xcode 16+ and the CI runner can read it, got '$$objver' (newer Xcode rewrites it on save)" >&2; exit 65; }
+	@if (( $${MINIMUM_IOS_MAJOR:-$$(cut -d. -f1 <<<"$(MINIMUM_IOS_VERSION)")} < 16 )); then \
+		hits="$$(grep -rnE 'XPC_(TYPE|ERROR)_[A-Z]|XPC_ARRAY_APPEND' --include='*.swift' "$(ROOT_DIR)" || true)"; \
+		if [[ -n "$$hits" ]]; then \
+			echo "warning: XPC SDK macros named in Swift link libswiftXPC.dylib, which iOS $(MINIMUM_IOS_VERSION) does not have; use InspectorXPC (Shared/InspectorXPC.swift):" >&2; \
+			echo "$$hits" >&2; \
+		fi; \
+	fi
 	@plutil -lint "$(ENTITLEMENTS)"
 	@plutil -lint "$(DAEMON_ENTITLEMENTS)" "$(CLI_ENTITLEMENTS)" "$(LAUNCH_DAEMON)"
 	@targets="$$(xcodebuild -project "$(PROJECT)" -list)"; \
@@ -133,7 +140,7 @@ check:
 harness:
 	@harness_bin="$$(mktemp /tmp/cocoainspector-harness.XXXXXX)"; \
 	trap 'rm -f "$$harness_bin"' EXIT; \
-	xcrun --sdk macosx swiftc -swift-version 5 "$(ROOT_DIR)"/Shared/*.swift "$(ROOT_DIR)/Tests/DataLayerHarness.swift" -o "$$harness_bin"; \
+	xcrun --sdk macosx swiftc -swift-version 5 -I "$(ROOT_DIR)/CInspectorXPC" "$(ROOT_DIR)"/Shared/*.swift "$(ROOT_DIR)/Tests/DataLayerHarness.swift" -o "$$harness_bin"; \
 	"$$harness_bin"
 
 build: check harness

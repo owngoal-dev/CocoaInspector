@@ -43,7 +43,7 @@ final class PeerAuthenticator {
                 inspectorXPCCopyEntitlement($0, &token)
             }
             return value.map {
-                xpc_get_type($0) == XPC_TYPE_BOOL && xpc_bool_get_value($0)
+                xpc_get_type($0) == InspectorXPC.typeBool && xpc_bool_get_value($0)
             } ?? false
         }
     }

@@ -43,7 +43,7 @@ actor InspectorDataClient {
         self.connection = connection
         state = .connected
         xpc_connection_set_event_handler(connection) { [weak self] event in
-            guard xpc_get_type(event) == XPC_TYPE_ERROR else { return }
+            guard xpc_get_type(event) == InspectorXPC.typeError else { return }
             Task { await self?.disconnect(generation: currentGeneration) }
         }
         xpc_connection_activate(connection)
@@ -197,7 +197,7 @@ actor InspectorDataClient {
     }
 
     private static func parseReply(_ object: xpc_object_t) -> Result<Reply, Error> {
-        guard xpc_get_type(object) == XPC_TYPE_DICTIONARY,
+        guard xpc_get_type(object) == InspectorXPC.typeDictionary,
               xpc_dictionary_get_uint64(object, InspectorWireKey.version) == InspectorProtocol.version,
               let code = InspectorReplyCode(rawValue: xpc_dictionary_get_int64(object, InspectorWireKey.code)) else {
             return .failure(InspectorDataError.transportFailure)
