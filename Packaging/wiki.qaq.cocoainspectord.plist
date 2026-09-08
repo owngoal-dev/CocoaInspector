@@ -11,7 +11,7 @@
 	<key>UserName</key>
 	<string>root</string>
 	<key>ProcessType</key>
-	<string>Background</string>
+	<string>Adaptive</string>
 	<key>Umask</key>
 	<integer>63</integer>
 	<key>MachServices</key>
