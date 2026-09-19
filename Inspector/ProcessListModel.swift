@@ -277,17 +277,29 @@ final class ProcessListModel {
 
     func sendSignal(_ signal: InspectorSignal, to identity: ProcessIdentity) async throws {
         let closesAfterOperation = !shouldRun || isPaused
-        try await enqueue { [session] in
+        let scope = scopeFilter
+        let order = sortOrder
+        let query = searchText
+        let prepared = try await enqueue { [session] in
             try await session.activateIfNeeded()
             do {
                 let ticket = try await session.prepareSignal(signal, for: identity)
                 try await session.commitSignal(ticket: ticket)
+                // The daemon has acknowledged the signal. Refresh once even
+                // when live updates are paused, before closing the connection.
+                // A failed refresh must not report an already-sent signal as failed.
+                let update = try? await session.sample(collectors: [.taskCounters, .executablePaths])
+                let prepared = update.map {
+                    PreparedSample(update: $0, scope: scope, order: order, query: query)
+                }
                 if closesAfterOperation { await session.deactivate() }
+                return prepared
             } catch {
                 if closesAfterOperation { await session.deactivate() }
                 throw error
             }
         }
+        if let prepared { apply(prepared) }
     }
 
     private func ensureSampling() {
