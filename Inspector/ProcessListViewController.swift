@@ -36,7 +36,12 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
         title = String(localized: "Inspector")
         navigationItem.largeTitleDisplayMode = .never
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: statsButton)
-        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: actionsButton)
+        // The first item sits at the edge: the live-updates toggle, with the
+        // sort and filter menu beside it.
+        navigationItem.rightBarButtonItems = [
+            liveUpdatesItem,
+            UIBarButtonItem(customView: actionsButton),
+        ]
 
         let search = UISearchController(searchResultsController: nil)
         search.searchResultsUpdater = self
@@ -140,6 +145,7 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
             header.setNeedsLayout()
         }
         statsButton.isEnabled = !model.rows.isEmpty
+        renderLiveUpdatesItem()
         tableView.tableFooterView = model.rows.isEmpty ? nil : creditsView
         renderOverlay()
     }
@@ -312,8 +318,31 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
         )
     }
 
+    // Green while samples keep arriving, yellow while they are paused: the
+    // button shows the state, and a tap flips it.
+    private lazy var liveUpdatesItem = UIBarButtonItem(
+        image: nil,
+        style: .plain,
+        target: self,
+        action: #selector(toggleLiveUpdates)
+    )
+
+    private func renderLiveUpdatesItem() {
+        let isPaused = model.isPaused
+        liveUpdatesItem.image = UIImage(
+            systemName: isPaused ? "pause.fill" : "dot.radiowaves.left.and.right"
+        )
+        liveUpdatesItem.tintColor = isPaused ? .systemYellow : .systemGreen
+        liveUpdatesItem.accessibilityLabel = String(localized: "Pause Live Updates")
+        liveUpdatesItem.accessibilityTraits = isPaused ? [.button, .selected] : .button
+    }
+
+    @objc private func toggleLiveUpdates() {
+        model.isPaused.toggle()
+    }
+
     private lazy var actionsButton = InspectorMenuButton(
-        symbolName: "ellipsis"
+        symbolName: "line.3.horizontal.decrease"
     ) { [weak self] in
         InspectorMenu(sections: [self?.actionItems() ?? []])
     }
@@ -355,11 +384,6 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
     private func actionItems() -> [InspectorMenuItem] {
         let model = model
         return [
-            InspectorMenuItem(
-                title: String(localized: "Pause Live Updates"),
-                symbolName: "pause.circle",
-                isOn: model.isPaused
-            ) { model.isPaused.toggle() },
             InspectorMenuItem(
                 title: String(localized: "Sort By"),
                 value: model.sortOrder.label,
