@@ -1,6 +1,5 @@
 import Foundation
 import ObjectiveC.runtime
-import SwiftUI
 import UIKit
 
 enum ApplicationBundleLocator {
@@ -122,49 +121,71 @@ actor ApplicationIconProvider {
 
 // Pass nil for anything that isn't an app bundle: those rows get the Terminal
 // icon so every row shares the same leading inset.
-struct ProcessApplicationIcon: View, Equatable {
-    let executablePath: String?
+final class ProcessApplicationIconView: UIView {
+    static let size: CGFloat = 36
 
-    @Environment(\.displayScale) private var displayScale
-    @State private var icon: UIImage?
+    private let imageView = UIImageView()
+    private var loadTask: Task<Void, Never>?
+    // Distinguishes "never configured" from a nil path, so the first
+    // configuration of a non-app row still draws the Terminal icon.
+    private var isConfigured = false
 
-    private let size: CGFloat = 36
-
-    static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.executablePath == rhs.executablePath
+    var executablePath: String? {
+        didSet {
+            guard !isConfigured || executablePath != oldValue else { return }
+            isConfigured = true
+            reload()
+        }
     }
 
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(.tertiary)
-            if let icon {
-                Image(uiImage: icon)
-                    .resizable()
-                    .scaledToFill()
-            } else if executablePath == nil {
-                Image("TerminalIcon")
-                    .resizable()
-                    .scaledToFill()
-            } else {
-                Image(systemName: "app.fill")
-                    .font(.system(size: 17))
-                    .foregroundStyle(.secondary)
-            }
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        backgroundColor = .tertiarySystemFill
+        layer.cornerRadius = 8
+        layer.cornerCurve = .continuous
+        clipsToBounds = true
+        isAccessibilityElement = false
+        imageView.frame = bounds
+        imageView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        addSubview(imageView)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) is not supported")
+    }
+
+    override var intrinsicContentSize: CGSize {
+        CGSize(width: Self.size, height: Self.size)
+    }
+
+    private func reload() {
+        loadTask?.cancel()
+        loadTask = nil
+        guard let executablePath else {
+            show(UIImage(named: "TerminalIcon"), isPlaceholder: false)
+            return
         }
-        .frame(width: size, height: size)
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-        .accessibilityHidden(true)
-        .task(id: requestID) {
-            guard let executablePath else { return }
-            icon = await ApplicationIconProvider.shared.icon(
-                for: executablePath,
-                scale: displayScale
+        show(nil, isPlaceholder: true)
+        let scale = traitCollection.displayScale
+        loadTask = Task { [weak self] in
+            let icon = await ApplicationIconProvider.shared.icon(for: executablePath, scale: scale)
+            guard !Task.isCancelled, let self, self.executablePath == executablePath else { return }
+            if let icon { self.show(icon, isPlaceholder: false) }
+        }
+    }
+
+    private func show(_ image: UIImage?, isPlaceholder: Bool) {
+        if isPlaceholder {
+            imageView.image = UIImage(
+                systemName: "app.fill",
+                withConfiguration: UIImage.SymbolConfiguration(pointSize: 17)
             )
+            imageView.tintColor = .secondaryLabel
+            imageView.contentMode = .center
+        } else {
+            imageView.image = image
+            imageView.contentMode = .scaleAspectFill
         }
-    }
-
-    private var requestID: String {
-        "\(executablePath ?? "")#\(displayScale)"
     }
 }

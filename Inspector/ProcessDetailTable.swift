@@ -1,26 +1,37 @@
-import SwiftUI
+import UIKit
 
 // A Mac-style table for the detail screens: a sticky row of tappable column
-// headers over one line per record. SwiftUI's own Table keeps only its first
-// column in a compact size class, so the columns are laid out by hand — header
-// cells and body cells share these specs, which is what keeps them aligned.
-struct DetailColumn: Identifiable {
+// headers over one line per record. The columns are laid out by hand — header
+// cells and body cells share these specs and one layout routine, which is what
+// keeps them aligned.
+struct DetailColumn {
     // Every column is a sort key, so the key doubles as the column's identity.
     let order: ProcessDetailSortOrder
-    let title: LocalizedStringKey
+    let title: String
     // nil takes whatever width the fixed columns leave over. Exactly one
     // column per table is flexible; the rest are sized for their content.
     let width: CGFloat?
-    var alignment: HorizontalAlignment = .leading
+    var alignment: Alignment = .leading
     var style: Style = .plain
-    var truncation: Text.TruncationMode = .tail
+    var lineBreakMode: NSLineBreakMode = .byTruncatingTail
 
-    var id: ProcessDetailSortOrder { order }
+    enum Alignment {
+        case leading
+        case trailing
+    }
 
     enum Style {
         case plain
         case monospaced
         case number
+
+        var font: UIFont {
+            switch self {
+            case .plain: .preferredFont(forTextStyle: .footnote)
+            case .monospaced: .inspector(.footnote, design: .monospaced)
+            case .number: .inspector(.footnote, design: .monospacedDigit)
+            }
+        }
     }
 }
 
@@ -31,11 +42,11 @@ enum ProcessDetailTable {
             []
         case .threads:
             [
-                DetailColumn(order: .name, title: "Thread", width: nil),
-                DetailColumn(order: .state, title: "State", width: 74),
+                DetailColumn(order: .name, title: String(localized: "Thread"), width: nil),
+                DetailColumn(order: .state, title: String(localized: "State"), width: 74),
                 DetailColumn(
                     order: .priority,
-                    title: "Pri",
+                    title: String(localized: "Pri"),
                     // Fits localized titles such as “优先级” together with
                     // the sort chevron without breaking row/header alignment.
                     width: 60,
@@ -44,7 +55,7 @@ enum ProcessDetailTable {
                 ),
                 DetailColumn(
                     order: .cpu,
-                    title: "CPU",
+                    title: String(localized: "CPU"),
                     width: 48,
                     alignment: .trailing,
                     style: .number
@@ -54,11 +65,11 @@ enum ProcessDetailTable {
             [
                 // Paths are read from the right: the file name matters more
                 // than the directory it sits in.
-                DetailColumn(order: .name, title: "File", width: nil, truncation: .head),
-                DetailColumn(order: .fileKind, title: "Kind", width: 56),
+                DetailColumn(order: .name, title: String(localized: "File"), width: nil, lineBreakMode: .byTruncatingHead),
+                DetailColumn(order: .fileKind, title: String(localized: "Kind"), width: 56),
                 DetailColumn(
                     order: .descriptor,
-                    title: "FD",
+                    title: String(localized: "FD"),
                     width: 34,
                     alignment: .trailing,
                     style: .number
@@ -66,11 +77,11 @@ enum ProcessDetailTable {
             ]
         case .ports:
             [
-                DetailColumn(order: .port, title: "Port", width: 66, style: .monospaced),
-                DetailColumn(order: .rights, title: "Rights", width: nil),
+                DetailColumn(order: .port, title: String(localized: "Port"), width: 66, style: .monospaced),
+                DetailColumn(order: .rights, title: String(localized: "Rights"), width: nil),
                 DetailColumn(
                     order: .references,
-                    title: "Refs",
+                    title: String(localized: "Refs"),
                     width: 38,
                     alignment: .trailing,
                     style: .number
@@ -78,18 +89,18 @@ enum ProcessDetailTable {
             ]
         case .modules:
             [
-                DetailColumn(order: .name, title: "Module", width: nil),
-                DetailColumn(order: .address, title: "Address", width: 92, style: .monospaced),
+                DetailColumn(order: .name, title: String(localized: "Module"), width: nil),
+                DetailColumn(order: .address, title: String(localized: "Address"), width: 92, style: .monospaced),
                 DetailColumn(
                     order: .size,
-                    title: "Size",
+                    title: String(localized: "Size"),
                     width: 58,
                     alignment: .trailing,
                     style: .number
                 ),
                 DetailColumn(
                     order: .references,
-                    title: "Ref",
+                    title: String(localized: "Ref"),
                     width: 28,
                     alignment: .trailing,
                     style: .number
@@ -281,87 +292,153 @@ extension DetailRowInspection {
     }
 }
 
-struct DetailTableHeader: View {
-    let columns: [DetailColumn]
-    @Binding var sort: ProcessDetailSort
-
-    var body: some View {
-        HStack(spacing: DetailTableMetrics.columnSpacing) {
-            ForEach(columns) { column in
-                Button {
-                    sort.select(column.order)
-                } label: {
-                    HStack(spacing: 2) {
-                        Text(column.title)
-                            .lineLimit(1)
-                        // Only the sorted column carries an arrow, the way a
-                        // Finder column header does.
-                        if sort.order == column.order {
-                            Image(systemName: sort.ascending ? "chevron.up" : "chevron.down")
-                                .font(.system(size: 8, weight: .bold))
-                        }
-                    }
-                    .frame(
-                        maxWidth: .infinity,
-                        alignment: Alignment(horizontal: column.alignment, vertical: .center)
-                    )
-                    .contentShape(.rect)
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(sort.order == column.order ? Color.accentColor : .secondary)
-                .detailColumnWidth(column)
-            }
-        }
-        .font(.caption.weight(.semibold))
-        .textCase(nil)
-        .listRowInsets(DetailTableMetrics.rowInsets)
-    }
-}
-
-struct DetailTableRow: View {
-    let columns: [DetailColumn]
-    let cells: [String]
-
-    var body: some View {
-        HStack(spacing: DetailTableMetrics.columnSpacing) {
-            ForEach(Array(columns.enumerated()), id: \.element.id) { index, column in
-                Text(index < cells.count ? cells[index] : "")
-                    .font(font(for: column))
-                    .foregroundStyle(index == 0 ? Color.primary : .secondary)
-                    .lineLimit(1)
-                    .truncationMode(column.truncation)
-                    .frame(
-                        maxWidth: .infinity,
-                        alignment: Alignment(horizontal: column.alignment, vertical: .center)
-                    )
-                    .detailColumnWidth(column)
-            }
-        }
-        .listRowInsets(DetailTableMetrics.rowInsets)
-    }
-
-    private func font(for column: DetailColumn) -> Font {
-        switch column.style {
-        case .plain: .footnote
-        case .monospaced: .footnote.monospaced()
-        case .number: .footnote.monospacedDigit()
-        }
-    }
-}
-
 enum DetailTableMetrics {
     static let columnSpacing: CGFloat = 8
-    static let rowInsets = EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16)
+    static let horizontalInset: CGFloat = 16
+    static let verticalInset: CGFloat = 5
+
+    // One frame per column, in column order. Mirrored for right-to-left
+    // languages, where the first column belongs on the right.
+    static func frames(
+        for columns: [DetailColumn],
+        in bounds: CGRect,
+        layoutDirection: UIUserInterfaceLayoutDirection
+    ) -> [CGRect] {
+        let available = bounds.width - horizontalInset * 2
+            - columnSpacing * CGFloat(max(columns.count - 1, 0))
+        let fixed = columns.reduce(0) { $0 + ($1.width ?? 0) }
+        let flexible = max(available - fixed, 0)
+        var x = bounds.minX + horizontalInset
+        return columns.map { column in
+            let width = column.width ?? flexible
+            defer { x += width + columnSpacing }
+            let origin = layoutDirection == .rightToLeft ? bounds.maxX - x - width + bounds.minX : x
+            return CGRect(x: origin, y: bounds.minY, width: width, height: bounds.height)
+        }
+    }
+
+    static func textAlignment(
+        for column: DetailColumn,
+        layoutDirection: UIUserInterfaceLayoutDirection
+    ) -> NSTextAlignment {
+        switch (column.alignment, layoutDirection) {
+        case (.leading, .rightToLeft), (.trailing, .leftToRight): .right
+        default: .left
+        }
+    }
 }
 
-private extension View {
-    // A fixed column pins its width; the flexible one keeps the maxWidth the
-    // cell already asked for and takes the remainder.
-    @ViewBuilder func detailColumnWidth(_ column: DetailColumn) -> some View {
-        if let width = column.width {
-            frame(width: width)
-        } else {
-            self
+final class DetailTableHeaderView: UITableViewHeaderFooterView {
+    static let reuseIdentifier = "detailHeader"
+
+    var selectOrder: (ProcessDetailSortOrder) -> Void = { _ in }
+
+    private var columns: [DetailColumn] = []
+    private var buttons: [UIButton] = []
+
+    func configure(columns: [DetailColumn], sort: ProcessDetailSort) {
+        if columns.map(\.order) != self.columns.map(\.order) {
+            buttons.forEach { $0.removeFromSuperview() }
+            buttons = columns.indices.map { index in
+                let button = UIButton(type: .system)
+                button.tag = index
+                button.titleLabel?.font = .inspector(.caption1, weight: .semibold)
+                button.titleLabel?.adjustsFontForContentSizeCategory = true
+                button.titleLabel?.lineBreakMode = .byTruncatingTail
+                button.addTarget(self, action: #selector(columnTapped(_:)), for: .touchUpInside)
+                contentView.addSubview(button)
+                return button
+            }
+        }
+        self.columns = columns
+        // Only the sorted column carries an arrow, the way a Finder column
+        // header does.
+        let arrowConfiguration = UIImage.SymbolConfiguration(pointSize: 8, weight: .bold)
+        for (button, column) in zip(buttons, columns) {
+            let isSorted = sort.order == column.order
+            button.setTitle(column.title, for: .normal)
+            button.setImage(
+                isSorted
+                    ? UIImage(
+                        systemName: sort.ascending ? "chevron.up" : "chevron.down",
+                        withConfiguration: arrowConfiguration
+                    )
+                    : nil,
+                for: .normal
+            )
+            button.tintColor = isSorted ? tintColor : .secondaryLabel
+            // The arrow trails the title.
+            button.semanticContentAttribute = effectiveUserInterfaceLayoutDirection == .rightToLeft
+                ? .forceLeftToRight
+                : .forceRightToLeft
+        }
+        setNeedsLayout()
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        let direction = effectiveUserInterfaceLayoutDirection
+        let frames = DetailTableMetrics.frames(
+            for: columns,
+            in: contentView.bounds,
+            layoutDirection: direction
+        )
+        for (index, button) in buttons.enumerated() where index < frames.count {
+            button.frame = frames[index]
+            let alignment = DetailTableMetrics.textAlignment(
+                for: columns[index],
+                layoutDirection: direction
+            )
+            button.contentHorizontalAlignment = alignment == .right ? .right : .left
+        }
+    }
+
+    @objc private func columnTapped(_ sender: UIButton) {
+        guard columns.indices.contains(sender.tag) else { return }
+        selectOrder(columns[sender.tag].order)
+    }
+}
+
+final class DetailTableCell: UITableViewCell {
+    static let reuseIdentifier = "detailRow"
+
+    private var columns: [DetailColumn] = []
+    private var labels: [UILabel] = []
+
+    func configure(columns: [DetailColumn], cells: [String]) {
+        if columns.map(\.order) != self.columns.map(\.order) {
+            labels.forEach { $0.removeFromSuperview() }
+            labels = columns.enumerated().map { index, column in
+                let label = UILabel()
+                label.font = column.style.font
+                label.adjustsFontForContentSizeCategory = true
+                label.textColor = index == 0 ? .label : .secondaryLabel
+                label.lineBreakMode = column.lineBreakMode
+                contentView.addSubview(label)
+                return label
+            }
+            self.columns = columns
+            setNeedsLayout()
+        }
+        for (index, label) in labels.enumerated() {
+            label.text = index < cells.count ? cells[index] : ""
+        }
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        let direction = effectiveUserInterfaceLayoutDirection
+        let frames = DetailTableMetrics.frames(
+            for: columns,
+            in: contentView.bounds,
+            layoutDirection: direction
+        )
+        for (index, label) in labels.enumerated() where index < frames.count {
+            label.frame = frames[index]
+            label.textAlignment = DetailTableMetrics.textAlignment(
+                for: columns[index],
+                layoutDirection: direction
+            )
         }
     }
 }

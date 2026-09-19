@@ -22,7 +22,7 @@
 | [roothide](https://github.com/roothide) | `iphoneos-arm64e` |
 | Rootless（`/var/jb`） | `iphoneos-arm64` |
 
-需要 iOS 16 或更高版本。Inspector 不适用于 App Store。
+需要 iOS 13 或更高版本。Inspector 不适用于 App Store。
 
 ## 功能
 

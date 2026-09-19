@@ -2,11 +2,11 @@ import Foundation
 
 enum InspectorFormat {
     static func memoryBytes(_ value: UInt64) -> String {
-        Int64(clamping: value).formatted(.byteCount(style: .memory))
+        ByteCountFormatter.string(fromByteCount: Int64(clamping: value), countStyle: .memory)
     }
 
     static func dataBytes(_ value: UInt64) -> String {
-        Int64(clamping: value).formatted(.byteCount(style: .file))
+        ByteCountFormatter.string(fromByteCount: Int64(clamping: value), countStyle: .file)
     }
 
     static func percent(_ fraction: Double) -> String {

@@ -1,6 +1,5 @@
 import Combine
 import Foundation
-import SwiftUI
 
 struct ProcessRow: Identifiable, Equatable {
     let record: ProcessRecord
@@ -34,7 +33,7 @@ enum ProcessSortOrder: String, CaseIterable, Identifiable {
 
     // Total order with pid as the final tiebreaker: Swift's sort is not
     // stable, so without it equal-keyed rows (idle processes, same-named
-    // helpers) shuffle randomly on every one-second resort.
+    // helpers) shuffle randomly on every resort.
     func areInOrder(_ lhs: ProcessRow, _ rhs: ProcessRow) -> Bool {
         switch self {
         case .cpu:
@@ -133,7 +132,7 @@ struct PreparedSample: Sendable {
 }
 
 @MainActor
-final class ProcessListModel: ObservableObject {
+final class ProcessListModel {
     enum Phase: Equatable {
         case idle
         case connecting
@@ -141,9 +140,9 @@ final class ProcessListModel: ObservableObject {
         case failed(String)
     }
 
-    // Publishing one aggregate value keeps a sample atomic from SwiftUI's
-    // perspective. Publishing every field separately would invalidate the
-    // 400-row list several times for each one-second sample on iOS 16.
+    // One aggregate value keeps a sample atomic for the screens observing it:
+    // every field of a sample lands in a single `changes` event, so the
+    // 400-row list redraws once per sample, not once per field.
     private struct ViewState {
         var phase: Phase = .idle
         var rows: [ProcessRow] = []
@@ -160,11 +159,21 @@ final class ProcessListModel: ObservableObject {
         var isPaused = false
     }
 
+    // Every sample walks the whole process table in the daemon and redraws
+    // the list here. Five seconds keeps both quiet enough to leave running.
+    private static let sampleInterval: TimeInterval = 5
+    private static let firstSampleDelay: TimeInterval = 1
+
     private static let sortOrderKey = "processList.sortOrder"
     private static let scopeFilterKey = "processList.scopeFilter"
 
-    @Published private var viewState: ViewState
+    private var viewState: ViewState {
+        didSet { changes.send() }
+    }
     private let defaults: UserDefaults
+
+    /// Fires on the main actor after every state change.
+    let changes = PassthroughSubject<Void, Never>()
 
     private(set) var phase: Phase {
         get { viewState.phase }
@@ -172,7 +181,7 @@ final class ProcessListModel: ObservableObject {
     }
     var rows: [ProcessRow] { viewState.rows }
     // Filtering and sorting happen once per sample or query change, never in a
-    // view body — bodies re-run every second and must stay O(visible rows).
+    // cell — rows are redrawn on every sample and must stay O(visible rows).
     var visibleRows: [ProcessRow] { viewState.visibleRows }
     var system: SystemRecord { viewState.system }
     var totalCPUFraction: Double { viewState.totalCPUFraction }
@@ -293,6 +302,7 @@ final class ProcessListModel: ObservableObject {
         do {
             try await enqueue { [session] in try await session.activate() }
             phase = .active
+            var isFirstSample = true
             while !Task.isCancelled {
                 let scope = scopeFilter
                 let order = sortOrder
@@ -307,7 +317,11 @@ final class ProcessListModel: ObservableObject {
                 }
                 guard !Task.isCancelled else { break }
                 apply(prepared)
-                await waitForNextSample()
+                // CPU use is the growth between two samples, so the first
+                // one has none to show; the second follows quickly to fill
+                // it in, and the steady pace starts from there.
+                await wait(seconds: isFirstSample ? Self.firstSampleDelay : Self.sampleInterval)
+                isFirstSample = false
             }
         } catch {
             if !Task.isCancelled {
@@ -323,20 +337,17 @@ final class ProcessListModel: ObservableObject {
     }
 
     // Task.sleep resumes independently of the main RunLoop mode, which lets a
-    // sample invalidate every visible List while UIScrollView is tracking a
+    // sample redraw every visible row while UIScrollView is tracking a
     // gesture. A default-mode timer is deferred during UI tracking and resumes
     // sampling after scrolling yields the RunLoop back to normal UI work.
-    private func waitForNextSample() async {
-        let ticks = Timer.publish(
-            every: 1,
-            tolerance: 0.1,
-            on: .main,
-            in: .default
-        )
-        .autoconnect()
-        .values
-        for await _ in ticks {
-            break
+    // Cancelling ends the wait at once, so pausing and resuming doesn't sit
+    // out the rest of a five-second gap.
+    private func wait(seconds: TimeInterval) async {
+        let wait = SampleWait()
+        await withTaskCancellationHandler {
+            await withCheckedContinuation { wait.start(seconds: seconds, continuation: $0) }
+        } onCancel: {
+            Task { @MainActor in wait.finish() }
         }
     }
 
@@ -363,10 +374,7 @@ final class ProcessListModel: ObservableObject {
     }
 
     // Interactive changes (search, sort, filter) rebuild on the main actor from
-    // the current rows and animate. Per-second samples apply unanimated (in
-    // apply(_:)): animating every sample kept the 400-row list in continuous
-    // batch-update animations, which let taps land on rows mid-move and held
-    // extra cells alive for the duration of each move.
+    // the current rows, without waiting for the next sample.
     private func rebuildVisibleRows(_ update: (inout ViewState) -> Void) {
         var next = viewState
         update(&next)
@@ -376,9 +384,7 @@ final class ProcessListModel: ObservableObject {
             order: next.sortOrder,
             query: next.searchText
         )
-        withAnimation(.easeInOut(duration: 0.2)) {
-            viewState = next
-        }
+        viewState = next
     }
 
     nonisolated static func visibleRows(
@@ -409,5 +415,38 @@ final class ProcessListModel: ObservableObject {
         }
         operationChain = Task { _ = try? await task.value }
         return try await task.value
+    }
+}
+
+// One wait between samples: a default-mode timer that a cancelled task can cut
+// short. Whichever of the timer and the cancellation comes first resumes the
+// continuation; the other finds nothing left to do.
+@MainActor
+private final class SampleWait {
+    private var timer: Timer?
+    private var continuation: CheckedContinuation<Void, Never>?
+    private var isFinished = false
+
+    func start(seconds: TimeInterval, continuation: CheckedContinuation<Void, Never>) {
+        guard !isFinished else {
+            continuation.resume()
+            return
+        }
+        self.continuation = continuation
+        let timer = Timer(timeInterval: seconds, repeats: false) { [weak self] _ in
+            guard let wait = self else { return }
+            Task { @MainActor in wait.finish() }
+        }
+        timer.tolerance = seconds / 10
+        RunLoop.main.add(timer, forMode: .default)
+        self.timer = timer
+    }
+
+    func finish() {
+        isFinished = true
+        timer?.invalidate()
+        timer = nil
+        continuation?.resume()
+        continuation = nil
     }
 }

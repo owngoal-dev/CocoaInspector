@@ -1,6 +1,6 @@
 # CocoaInspector
 
-iOS process inspector for roothide and rootless jailbreaks: SwiftUI app (`Inspector/`), XPC daemon (`CocoaInspectord/`), CLI (`CocoaInspectorCLI/`), shared wire/data layer (`Shared/`, `InspectorClient/`).
+iOS process inspector for roothide and rootless jailbreaks: UIKit app (`Inspector/`), XPC daemon (`CocoaInspectord/`), CLI (`CocoaInspectorCLI/`), shared wire/data layer (`Shared/`, `InspectorClient/`).
 
 ## Build
 
@@ -12,6 +12,11 @@ iOS process inspector for roothide and rootless jailbreaks: SwiftUI app (`Inspec
 - Optional local overrides go in the git-ignored `Configuration/Developer*.xcconfig` files (for example `DEVELOPMENT_TEAM`). See `Configuration/Developer.xcconfig.example`.
 - Pushing a `vX.Y.Z` tag makes CI apply that version, build both packages, and publish them to a GitHub release. CI is a single job on the GitHub-hosted `macos-26` runner — build, package verification, and release all run there; no self-hosted machine.
 - The published page lives in `Documents/Site/` (`index.html`, `icon.png`). `.github/workflows/pages.yml` deploys it, so the repo's Pages source must be **GitHub Actions**, not the legacy `/docs` folder. Keep those files at `Site/` root — `manifest.json` fetches `https://owngoal-dev.github.io/CocoaInspector/icon.png`.
+- The minimum OS is iOS 13 (`IPHONEOS_DEPLOYMENT_TARGET` in `Configuration/Base.xcconfig`; `make check` keeps the `.deb`'s `firmware` dependency in step). That floor is why the app is UIKit with a classic `UISplitViewController`, not SwiftUI, and what any new API has to be weighed against:
+  - Gate anything newer than iOS 13 with `#available` and give the older path a real fallback (`InspectorMenuButton` shows a `UIMenu` from iOS 14 and action sheets on 13).
+  - `String(localized:)` resolves to the shim in `Inspector/LocalizedText.swift`, not Foundation's. Xcode can't extract strings through it, so every entry in `Localizable.xcstrings` is `"extractionState": "manual"` — add new keys (and their translations) to the catalog by hand, with the exact format key (`%lld` for `Int`, `%d` for `Int32`, `%@` for `String`).
+  - Swift concurrency only ships with the OS from iOS 15. The app embeds `libswift_Concurrency.dylib` in `Frameworks/`; `Scripts/package-deb.sh` signs it and installs a second copy at `usr/lib/cocoainspector/` for the CLI, whose rpath looks there after `/usr/lib/swift`. The daemon must stay free of `async`/`await`.
+- The simulator has no daemon: `InspectorClient/SimulatorProcessSource.swift` (simulator builds only) feeds the app made-up processes so the screens can be exercised from Xcode.
 - `project.pbxproj` must keep `objectVersion = 77` so Xcode 16+ and the CI runner's Xcode can read it; newer Xcode betas rewrite it on GUI save, and `make check` fails when that happens — revert that line.
 - SourceKit/editor diagnostics in this repo are frequently stale false positives (`PBXFileSystemSynchronizedRootGroup`); trust `xcodebuild` output, not the editor.
 

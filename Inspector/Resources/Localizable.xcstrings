@@ -2,6 +2,7 @@
   "sourceLanguage": "en",
   "strings": {
     "“Ask It to Quit” lets the process shut down on its own. “Force Quit” ends it right away, so unsaved work can be lost.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -84,6 +85,7 @@
       }
     },
     "%@ of %@ in use": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -166,6 +168,7 @@
       }
     },
     "%lld (%lld running)": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -248,6 +251,7 @@
       }
     },
     "%lld (%lld sockets)": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -330,6 +334,7 @@
       }
     },
     "%lld (base %lld)": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -412,6 +417,7 @@
       }
     },
     "%lld cores": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "variations": {
@@ -656,6 +662,7 @@
       }
     },
     "%lld in total": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -738,6 +745,7 @@
       }
     },
     "%lld of %lld processes": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -820,6 +828,7 @@
       }
     },
     "%lld of %lld shown": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -902,6 +911,7 @@
       }
     },
     "%lld processes": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "variations": {
@@ -1146,6 +1156,7 @@
       }
     },
     "%lld processes · %lld threads": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -1228,6 +1239,7 @@
       }
     },
     "%lld threads": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "variations": {
@@ -1472,6 +1484,7 @@
       }
     },
     "%lldd %lldh": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -1554,6 +1567,7 @@
       }
     },
     "%lldh %lldm": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -1636,6 +1650,7 @@
       }
     },
     "%lldm": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -1718,6 +1733,7 @@
       }
     },
     "Address": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -1800,6 +1816,7 @@
       }
     },
     "Another request is still finishing.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -1882,6 +1899,7 @@
       }
     },
     "App Bundle": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -1964,6 +1982,7 @@
       }
     },
     "Apps": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -2046,6 +2065,7 @@
       }
     },
     "Ask It to Quit": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -2128,6 +2148,7 @@
       }
     },
     "Ask It to Quit (SIGTERM)": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -2210,6 +2231,7 @@
       }
     },
     "Base Priority": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -2292,6 +2314,7 @@
       }
     },
     "Bundle ID": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -2374,6 +2397,7 @@
       }
     },
     "Can’t Connect": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -2456,6 +2480,7 @@
       }
     },
     "Choose a process on the left to see what it’s up to.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -2538,6 +2563,7 @@
       }
     },
     "Command Line": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -2620,6 +2646,7 @@
       }
     },
     "Connecting to the inspector service…": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -2702,6 +2729,7 @@
       }
     },
     "Copy": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -2784,6 +2812,7 @@
       }
     },
     "Couldn’t Export the Details": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -2866,6 +2895,7 @@
       }
     },
     "Couldn’t Load This": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -2948,6 +2978,7 @@
       }
     },
     "Couldn’t reach the inspector service.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -3030,6 +3061,7 @@
       }
     },
     "Couldn’t read this data (error %lld).": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -3112,6 +3144,7 @@
       }
     },
     "Couldn’t refresh the details: %@": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -3194,6 +3227,7 @@
       }
     },
     "Couldn’t Send the Signal": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -3276,6 +3310,7 @@
       }
     },
     "CPU": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -3358,6 +3393,7 @@
       }
     },
     "CPU Usage": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -3440,6 +3476,7 @@
       }
     },
     "Detail": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -3522,6 +3559,7 @@
       }
     },
     "Display Name": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -3604,6 +3642,7 @@
       }
     },
     "Done": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -3686,6 +3725,7 @@
       }
     },
     "Done.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -3768,6 +3808,7 @@
       }
     },
     "Downloaded": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -3850,6 +3891,7 @@
       }
     },
     "error %lld": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -3932,6 +3974,7 @@
       }
     },
     "Everything": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -4014,6 +4057,7 @@
       }
     },
     "Executable": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -4096,6 +4140,7 @@
       }
     },
     "Export as Property List": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -4178,6 +4223,7 @@
       }
     },
     "FD": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -4260,6 +4306,7 @@
       }
     },
     "File": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -4342,6 +4389,7 @@
       }
     },
     "File Descriptor": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -4424,6 +4472,7 @@
       }
     },
     "File Descriptor %d": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -4506,6 +4555,7 @@
       }
     },
     "Force Quit": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -4588,6 +4638,7 @@
       }
     },
     "Force Quit (SIGKILL)": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -4670,6 +4721,7 @@
       }
     },
     "Halted": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -4752,6 +4804,7 @@
       }
     },
     "Identifier": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -4834,6 +4887,7 @@
       }
     },
     "Inspector": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -4916,6 +4970,7 @@
       }
     },
     "Inspector Was Updated": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -4998,6 +5053,7 @@
       }
     },
     "Kernel Object Type": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -5080,6 +5136,7 @@
       }
     },
     "Kind": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -5162,6 +5219,7 @@
       }
     },
     "Kqueue": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -5244,6 +5302,7 @@
       }
     },
     "Later": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -5326,6 +5385,7 @@
       }
     },
     "Loaded Modules": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -5408,6 +5468,7 @@
       }
     },
     "Local Address": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -5490,6 +5551,7 @@
       }
     },
     "Lost the connection to the inspector service.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -5572,6 +5634,7 @@
       }
     },
     "Mach Ports": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -5654,6 +5717,7 @@
       }
     },
     "Made with ❤️ by OwnGoal Studio": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -5736,6 +5800,7 @@
       }
     },
     "Maximum Priority": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -5818,6 +5883,7 @@
       }
     },
     "Memory": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -5900,6 +5966,7 @@
       }
     },
     "Memory Footprint": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -5982,6 +6049,7 @@
       }
     },
     "Memory Used": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -6064,6 +6132,7 @@
       }
     },
     "Module": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -6146,6 +6215,7 @@
       }
     },
     "More Details": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -6228,6 +6298,7 @@
       }
     },
     "Name": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -6310,6 +6381,7 @@
       }
     },
     "Nice Value": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -6392,6 +6464,7 @@
       }
     },
     "No process matches the “%@” filter right now.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -6474,6 +6547,7 @@
       }
     },
     "No processes match “%@”.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -6556,6 +6630,7 @@
       }
     },
     "No Results": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -6638,6 +6713,7 @@
       }
     },
     "Nothing Here Yet": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -6720,6 +6796,7 @@
       }
     },
     "Nothing matches “%@”.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -6802,6 +6879,7 @@
       }
     },
     "Nothing to Show": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -6884,6 +6962,7 @@
       }
     },
     "Object": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -6966,6 +7045,7 @@
       }
     },
     "OK": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -7048,6 +7128,7 @@
       }
     },
     "Open Files": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -7130,6 +7211,7 @@
       }
     },
     "Open Flags": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -7212,6 +7294,7 @@
       }
     },
     "Overview": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -7294,6 +7377,7 @@
       }
     },
     "Path": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -7376,6 +7460,7 @@
       }
     },
     "Pause Live Updates": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -7458,6 +7543,7 @@
       }
     },
     "Paused": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -7540,6 +7626,7 @@
       }
     },
     "Peer": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -7622,6 +7709,7 @@
       }
     },
     "PID": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -7704,6 +7792,7 @@
       }
     },
     "Pipe": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -7786,6 +7875,7 @@
       }
     },
     "Port": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -7868,6 +7958,7 @@
       }
     },
     "Port %@": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -7950,6 +8041,7 @@
       }
     },
     "Port Name": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -8032,6 +8124,7 @@
       }
     },
     "Port Set Members": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -8114,6 +8207,7 @@
       }
     },
     "Pri": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -8196,6 +8290,7 @@
       }
     },
     "Priority": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -8278,6 +8373,7 @@
       }
     },
     "Processes": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -8360,6 +8456,7 @@
       }
     },
     "Quit Inspector": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -8442,6 +8539,7 @@
       }
     },
     "Read from Disk": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -8524,6 +8622,7 @@
       }
     },
     "Ref": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -8606,6 +8705,7 @@
       }
     },
     "References": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -8688,6 +8788,7 @@
       }
     },
     "Refs": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -8770,6 +8871,7 @@
       }
     },
     "Remote Address": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -8852,6 +8954,7 @@
       }
     },
     "Requires iOS": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -8934,6 +9037,7 @@
       }
     },
     "Resident Memory": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -9016,6 +9120,7 @@
       }
     },
     "Resource Use": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -9098,6 +9203,7 @@
       }
     },
     "Rights": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -9180,6 +9286,7 @@
       }
     },
     "Running": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -9262,6 +9369,7 @@
       }
     },
     "Running As": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -9344,6 +9452,7 @@
       }
     },
     "Sandbox": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -9426,6 +9535,7 @@
       }
     },
     "Sandboxed": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -9508,6 +9618,7 @@
       }
     },
     "Scheduling Policy": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -9590,6 +9701,7 @@
       }
     },
     "SDK": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -9672,6 +9784,7 @@
       }
     },
     "Search": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -9754,6 +9867,7 @@
       }
     },
     "Search by name or path": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -9836,6 +9950,7 @@
       }
     },
     "Search by name or PID": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -9918,6 +10033,7 @@
       }
     },
     "Search by name or thread ID": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -10000,6 +10116,7 @@
       }
     },
     "Search by path or descriptor": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -10082,6 +10199,7 @@
       }
     },
     "Search by port name or rights": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -10164,6 +10282,7 @@
       }
     },
     "Select a Process": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -10246,6 +10365,7 @@
       }
     },
     "Share": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -10328,6 +10448,7 @@
       }
     },
     "Show": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -10410,6 +10531,7 @@
       }
     },
     "Size": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -10492,6 +10614,7 @@
       }
     },
     "Sleeping For": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -10574,6 +10697,7 @@
       }
     },
     "Socket": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -10656,6 +10780,7 @@
       }
     },
     "Some of this couldn’t be read (error %d).": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -10738,6 +10863,7 @@
       }
     },
     "Something unexpected went wrong.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -10820,6 +10946,7 @@
       }
     },
     "Sort By": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -10902,6 +11029,7 @@
       }
     },
     "Started By (PPID)": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -10984,6 +11112,7 @@
       }
     },
     "State": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -11066,6 +11195,7 @@
       }
     },
     "State %lld": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -11148,6 +11278,7 @@
       }
     },
     "Status": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -11230,6 +11361,7 @@
       }
     },
     "Stop": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -11312,6 +11444,7 @@
       }
     },
     "Stop %@?": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -11394,6 +11527,7 @@
       }
     },
     "Stop This Process?": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -11476,6 +11610,7 @@
       }
     },
     "Stopped": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -11558,6 +11693,7 @@
       }
     },
     "System (root)": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -11640,6 +11776,7 @@
       }
     },
     "System Stats": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -11722,6 +11859,7 @@
       }
     },
     "That took too long. Please try again.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -11804,6 +11942,7 @@
       }
     },
     "The inspector service couldn’t complete this.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -11886,6 +12025,7 @@
       }
     },
     "The inspector service is busy right now.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -11968,6 +12108,7 @@
       }
     },
     "The inspector service sent an unexpected reply.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -12050,6 +12191,7 @@
       }
     },
     "The inspector service turned down this request.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -12132,6 +12274,7 @@
       }
     },
     "The process data couldn’t be read.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -12214,6 +12357,7 @@
       }
     },
     "This app isn’t allowed to read that (error %lld).": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -12296,6 +12440,7 @@
       }
     },
     "This asks the process to shut down on its own.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -12378,6 +12523,7 @@
       }
     },
     "This Device": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -12460,6 +12606,7 @@
       }
     },
     "This ends the process immediately. Unsaved work can be lost.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -12542,6 +12689,7 @@
       }
     },
     "This is still the old version. Quit Inspector and open it again to use the new one.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -12624,6 +12772,7 @@
       }
     },
     "This isn’t available on this device.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -12706,6 +12855,7 @@
       }
     },
     "This process has ended or changed.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -12788,6 +12938,7 @@
       }
     },
     "This process has ended.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -12870,6 +13021,7 @@
       }
     },
     "This process is no longer running.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -12952,6 +13104,7 @@
       }
     },
     "This session is already running.": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -13034,6 +13187,7 @@
       }
     },
     "Thread": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -13116,6 +13270,7 @@
       }
     },
     "Thread %@": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -13198,6 +13353,7 @@
       }
     },
     "Thread ID": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -13280,6 +13436,7 @@
       }
     },
     "Threads": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -13362,6 +13519,7 @@
       }
     },
     "Total CPU Time": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -13444,6 +13602,7 @@
       }
     },
     "Try Again": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -13526,6 +13685,7 @@
       }
     },
     "Uninterruptible": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -13608,6 +13768,7 @@
       }
     },
     "Unknown": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -13690,6 +13851,7 @@
       }
     },
     "Unrestricted": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -13772,6 +13934,7 @@
       }
     },
     "Up and Running": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -13854,6 +14017,7 @@
       }
     },
     "Uploaded": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -13936,6 +14100,7 @@
       }
     },
     "User (mobile)": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -14018,6 +14183,7 @@
       }
     },
     "Version": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -14100,6 +14266,7 @@
       }
     },
     "Virtual Memory": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -14182,6 +14349,7 @@
       }
     },
     "Waiting": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -14264,6 +14432,7 @@
       }
     },
     "Written to Disk": {
+      "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {

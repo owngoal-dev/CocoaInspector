@@ -1,7 +1,7 @@
 #include "Version.xcconfig"
 
 // Single source of truth for the minimum OS across every product target.
-IPHONEOS_DEPLOYMENT_TARGET = 16.0
+IPHONEOS_DEPLOYMENT_TARGET = 13.0
 
 // CInspectorXPC/ is a header-only clang module holding the SDK's XPC_TYPE_*
 // macros as C functions. Naming those macros in Swift resolves them through

@@ -36,6 +36,8 @@ for payload in \
     "/Applications/Inspector.app/AppIcon76x76@2x~ipad.png" \
     "/usr/libexec/cocoainspectord" \
     "/usr/bin/cocoainspector" \
+    "/Applications/Inspector.app/Frameworks/libswift_Concurrency.dylib" \
+    "/usr/lib/cocoainspector/libswift_Concurrency.dylib" \
     "/Library/LaunchDaemons/wiki.qaq.cocoainspectord.plist"
 do
     grep -F ".$install_prefix$payload" <<<"$contents" >/dev/null || {

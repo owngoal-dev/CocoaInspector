@@ -22,7 +22,7 @@ Packages are also on [GitHub Releases](https://github.com/owngoal-dev/CocoaInspe
 | [roothide](https://github.com/roothide) | `iphoneos-arm64e` |
 | Rootless (`/var/jb`) | `iphoneos-arm64` |
 
-Requires iOS 16 or later. Inspector is not for the App Store.
+Requires iOS 13 or later. Inspector is not for the App Store.
 
 ## Features
 
