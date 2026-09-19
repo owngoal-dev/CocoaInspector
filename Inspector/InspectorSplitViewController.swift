@@ -33,6 +33,13 @@ final class InspectorSplitViewController: UISplitViewController, UISplitViewCont
         fatalError("init(coder:) is not supported")
     }
 
+    // What shows around the floating sidebar, and through it: the same
+    // grouped background the detail column has, not the split view's white.
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .systemGroupedBackground
+    }
+
     private func open(_ row: ProcessRow) {
         let detail = ProcessDetailViewController(row: row, model: model)
         showDetailViewController(UINavigationController(rootViewController: detail), sender: self)
@@ -73,7 +80,7 @@ final class InspectorSplitViewController: UISplitViewController, UISplitViewCont
 
 private final class ProcessPlaceholderViewController: UIViewController {
     override func loadView() {
-        view = InspectorUnavailableView(
+        let view = InspectorUnavailableView(
             .message(
                 symbolName: "square.stack.3d.up",
                 title: String(localized: "Select a Process"),
@@ -81,5 +88,9 @@ private final class ProcessPlaceholderViewController: UIViewController {
                 actionTitle: nil
             )
         )
+        // The same background as the detail screen that replaces it, and as
+        // the split view showing around the sidebar.
+        view.backgroundColor = .systemGroupedBackground
+        self.view = view
     }
 }

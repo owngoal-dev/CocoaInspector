@@ -101,8 +101,16 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
         appliedSidebarAppearance = isSidebar
         tableView.backgroundColor = isSidebar ? .clear : .systemGroupedBackground
         for cell in tableView.visibleCells {
-            cell.backgroundColor = isSidebar ? .clear : .secondarySystemGroupedBackground
+            style(cell, isSidebar: isSidebar)
         }
+    }
+
+    // A sidebar row has no card, and its selection is a rounded highlight
+    // rather than a gray slab from edge to edge.
+    private func style(_ cell: UITableViewCell, isSidebar: Bool) {
+        cell.backgroundColor = isSidebar ? .clear : .secondarySystemGroupedBackground
+        guard isSidebar != (cell.selectedBackgroundView is SidebarSelectionView) else { return }
+        cell.selectedBackgroundView = isSidebar ? SidebarSelectionView() : nil
     }
 
     override func tableView(
@@ -110,7 +118,7 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
         willDisplay cell: UITableViewCell,
         forRowAt indexPath: IndexPath
     ) {
-        cell.backgroundColor = usesSidebarAppearance ? .clear : .secondarySystemGroupedBackground
+        style(cell, isSidebar: usesSidebarAppearance)
     }
 
     func updateSearchResults(for searchController: UISearchController) {
@@ -413,6 +421,20 @@ extension UIViewController {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: String(localized: "OK"), style: .cancel))
         present(alert, animated: true)
+    }
+}
+
+private final class SidebarSelectionView: UIView {
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        backgroundColor = .tertiarySystemFill
+        layer.cornerRadius = 12
+        layer.cornerCurve = .continuous
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) is not supported")
     }
 }
 
