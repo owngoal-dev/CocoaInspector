@@ -1,0 +1,484 @@
+{
+    "class": "DepictionTabView",
+    "minVersion": "0.4",
+    "headerImage": "https://raw.githubusercontent.com/owngoal-dev/CocoaInspector/main/Documents/screenshots.png",
+    "tabs": [
+        {
+            "class": "DepictionStackView",
+            "tabname": "Details",
+            "views": [
+                {
+                    "class": "DepictionSubheaderView",
+                    "title": "Inspect Running Processes",
+                    "useBoldText": true
+                },
+                {
+                    "class": "DepictionHeaderView",
+                    "title": "Description"
+                },
+                {
+                    "class": "DepictionSeparatorView"
+                },
+                {
+                    "class": "DepictionMarkdownView",
+                    "markdown": "Inspect running processes on your jailbroken iPhone or iPad. Monitor CPU usage, memory, and threads, then open a process for more detail.\n\n## Features\n\n- Follow a live process list with updates every second, or pause it to inspect a moment in time.\n- Search by name or PID, sort the list, and filter system, user, or app processes.\n- Inspect threads, open files and sockets, Mach ports, loaded modules, sandbox status, and disk and network use.\n- Ask a process to quit or force it to quit. PID 1 cannot be stopped.\n- Share a snapshot of a process as a file.\n- Inspect and monitor processes from a terminal with `cocoainspector`.\n\n## Compatibility\n\nRequires iOS 13 or later and a roothide or rootless jailbreak. Choose the `iphoneos-arm64e` package for roothide or `iphoneos-arm64` for rootless.\n\n[View Source](https://github.com/owngoal-dev/CocoaInspector) · [Join the Community](https://discord.gg/vqhDEep2mN)",
+                    "useSpacing": true
+                },
+                {
+                    "class": "DepictionHeaderView",
+                    "title": "Information"
+                },
+                {
+                    "class": "DepictionSeparatorView"
+                },
+                {
+                    "class": "DepictionTableTextView",
+                    "title": "Version",
+                    "text": "0.5.4"
+                },
+                {
+                    "class": "DepictionTableTextView",
+                    "title": "iOS Versions",
+                    "text": "13 or later"
+                },
+                {
+                    "class": "DepictionTableTextView",
+                    "title": "Developer",
+                    "text": "OwnGoal Studio"
+                },
+                {
+                    "class": "DepictionTableTextView",
+                    "title": "License",
+                    "text": "MIT"
+                },
+                {
+                    "class": "DepictionTableTextView",
+                    "title": "Updated",
+                    "text": "September 20, 2026"
+                }
+            ]
+        },
+        {
+            "class": "DepictionStackView",
+            "tabname": "Changelog",
+            "views": [
+                {
+                    "class": "DepictionLayerView",
+                    "views": [
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "v0.5.3",
+                            "fontWeight": "bold",
+                            "fontSize": 16
+                        },
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "2026-09-19",
+                            "fontWeight": "semibold",
+                            "fontSize": 16,
+                            "textColor": "#696969",
+                            "alignment": 2
+                        }
+                    ]
+                },
+                {
+                    "class": "DepictionMarkdownView",
+                    "markdown": "CocoaInspector 0.5.3.\n\n| Jailbreak | Package |\n| --- | --- |\n| roothide | `wiki.qaq.inspector_0.5.3_iphoneos-arm64e.deb` |\n| rootless (/var/jb) | `wiki.qaq.inspector_0.5.3_iphoneos-arm64.deb` |\n\n```sh\nsudo dpkg -i <package>.deb\n```\n\nSHA-256 sums are in `SHA256SUMS`.\n\n- Commit: `c124b0fa61f445b9cb9fd277225a805c5d966b32`\n"
+                },
+                {
+                    "class": "DepictionSeparatorView"
+                },
+                {
+                    "class": "DepictionLayerView",
+                    "views": [
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "v0.5.2",
+                            "fontWeight": "bold",
+                            "fontSize": 16
+                        },
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "2026-09-19",
+                            "fontWeight": "semibold",
+                            "fontSize": 16,
+                            "textColor": "#696969",
+                            "alignment": 2
+                        }
+                    ]
+                },
+                {
+                    "class": "DepictionMarkdownView",
+                    "markdown": "CocoaInspector 0.5.2.\n\n| Jailbreak | Package |\n| --- | --- |\n| roothide | `wiki.qaq.inspector_0.5.2_iphoneos-arm64e.deb` |\n| rootless (/var/jb) | `wiki.qaq.inspector_0.5.2_iphoneos-arm64.deb` |\n\n```sh\nsudo dpkg -i <package>.deb\n```\n\nSHA-256 sums are in `SHA256SUMS`.\n\n- Commit: `ec72ee9ed75744e60354df0216f8252da509b344`\n"
+                },
+                {
+                    "class": "DepictionSeparatorView"
+                },
+                {
+                    "class": "DepictionLayerView",
+                    "views": [
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "v0.5.1",
+                            "fontWeight": "bold",
+                            "fontSize": 16
+                        },
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "2026-09-19",
+                            "fontWeight": "semibold",
+                            "fontSize": 16,
+                            "textColor": "#696969",
+                            "alignment": 2
+                        }
+                    ]
+                },
+                {
+                    "class": "DepictionMarkdownView",
+                    "markdown": "CocoaInspector 0.5.1.\n\n| Jailbreak | Package |\n| --- | --- |\n| roothide | `wiki.qaq.inspector_0.5.1_iphoneos-arm64e.deb` |\n| rootless (/var/jb) | `wiki.qaq.inspector_0.5.1_iphoneos-arm64.deb` |\n\n```sh\nsudo dpkg -i <package>.deb\n```\n\nSHA-256 sums are in `SHA256SUMS`.\n\n- Commit: `7c1a5521662e412d58f28ed00c3268da42d7eb6e`\n"
+                },
+                {
+                    "class": "DepictionSeparatorView"
+                },
+                {
+                    "class": "DepictionLayerView",
+                    "views": [
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "v0.5.0",
+                            "fontWeight": "bold",
+                            "fontSize": 16
+                        },
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "2026-09-19",
+                            "fontWeight": "semibold",
+                            "fontSize": 16,
+                            "textColor": "#696969",
+                            "alignment": 2
+                        }
+                    ]
+                },
+                {
+                    "class": "DepictionMarkdownView",
+                    "markdown": "CocoaInspector 0.5.0.\n\n| Jailbreak | Package |\n| --- | --- |\n| roothide | `wiki.qaq.inspector_0.5.0_iphoneos-arm64e.deb` |\n| rootless (/var/jb) | `wiki.qaq.inspector_0.5.0_iphoneos-arm64.deb` |\n\n```sh\nsudo dpkg -i <package>.deb\n```\n\nSHA-256 sums are in `SHA256SUMS`.\n\n- Commit: `673e1ea634c244e2e988754d3f12da7773a703ec`\n"
+                },
+                {
+                    "class": "DepictionSeparatorView"
+                },
+                {
+                    "class": "DepictionLayerView",
+                    "views": [
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "v0.4.2",
+                            "fontWeight": "bold",
+                            "fontSize": 16
+                        },
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "2026-09-11",
+                            "fontWeight": "semibold",
+                            "fontSize": 16,
+                            "textColor": "#696969",
+                            "alignment": 2
+                        }
+                    ]
+                },
+                {
+                    "class": "DepictionMarkdownView",
+                    "markdown": "CocoaInspector 0.4.2.\n\n| Jailbreak | Package |\n| --- | --- |\n| roothide | `wiki.qaq.inspector_0.4.2_iphoneos-arm64e.deb` |\n| rootless (/var/jb) | `wiki.qaq.inspector_0.4.2_iphoneos-arm64.deb` |\n\n```sh\nsudo dpkg -i <package>.deb\n```\n\nSHA-256 sums are in `SHA256SUMS`.\n\n- Commit: `a9f8d16b7ecdb83ac68a1778c5aa8913054066e0`\n"
+                },
+                {
+                    "class": "DepictionSeparatorView"
+                },
+                {
+                    "class": "DepictionLayerView",
+                    "views": [
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "v0.4.1",
+                            "fontWeight": "bold",
+                            "fontSize": 16
+                        },
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "2026-09-08",
+                            "fontWeight": "semibold",
+                            "fontSize": 16,
+                            "textColor": "#696969",
+                            "alignment": 2
+                        }
+                    ]
+                },
+                {
+                    "class": "DepictionMarkdownView",
+                    "markdown": "CocoaInspector 0.4.1.\n\n| Jailbreak | Package |\n| --- | --- |\n| roothide | `wiki.qaq.inspector_0.4.1_iphoneos-arm64e.deb` |\n| rootless (/var/jb) | `wiki.qaq.inspector_0.4.1_iphoneos-arm64.deb` |\n\n```sh\nsudo dpkg -i <package>.deb\n```\n\nSHA-256 sums are in `SHA256SUMS`.\n\n- Commit: `0fd2b045ebc6a25a50edc9c8c57cea0efd3a1259`\n"
+                },
+                {
+                    "class": "DepictionSeparatorView"
+                },
+                {
+                    "class": "DepictionLayerView",
+                    "views": [
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "v0.4.0",
+                            "fontWeight": "bold",
+                            "fontSize": 16
+                        },
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "2026-09-07",
+                            "fontWeight": "semibold",
+                            "fontSize": 16,
+                            "textColor": "#696969",
+                            "alignment": 2
+                        }
+                    ]
+                },
+                {
+                    "class": "DepictionMarkdownView",
+                    "markdown": "CocoaInspector 0.4.0.\n\n| Jailbreak | Package |\n| --- | --- |\n| roothide | `wiki.qaq.inspector_0.4.0_iphoneos-arm64e.deb` |\n| rootless (/var/jb) | `wiki.qaq.inspector_0.4.0_iphoneos-arm64.deb` |\n\n```sh\nsudo dpkg -i <package>.deb\n```\n\nSHA-256 sums are in `SHA256SUMS`.\n\n- Commit: `28b00ffed06eb587868e89c5f85a3c963eff92b1`\n"
+                },
+                {
+                    "class": "DepictionSeparatorView"
+                },
+                {
+                    "class": "DepictionLayerView",
+                    "views": [
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "v0.3.0",
+                            "fontWeight": "bold",
+                            "fontSize": 16
+                        },
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "2026-09-06",
+                            "fontWeight": "semibold",
+                            "fontSize": 16,
+                            "textColor": "#696969",
+                            "alignment": 2
+                        }
+                    ]
+                },
+                {
+                    "class": "DepictionMarkdownView",
+                    "markdown": "CocoaInspector 0.3.0.\n\n| Jailbreak | Package |\n| --- | --- |\n| roothide | `wiki.qaq.inspector_0.3.0_iphoneos-arm64e.deb` |\n| rootless (/var/jb) | `wiki.qaq.inspector_0.3.0_iphoneos-arm64.deb` |\n\n```sh\nsudo dpkg -i <package>.deb\n```\n\nSHA-256 sums are in `SHA256SUMS`.\n\n- Commit: `363f37dfbc81212a9ca033896aec731a4bb34716`\n"
+                },
+                {
+                    "class": "DepictionSeparatorView"
+                },
+                {
+                    "class": "DepictionLayerView",
+                    "views": [
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "v0.2.4",
+                            "fontWeight": "bold",
+                            "fontSize": 16
+                        },
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "2026-09-06",
+                            "fontWeight": "semibold",
+                            "fontSize": 16,
+                            "textColor": "#696969",
+                            "alignment": 2
+                        }
+                    ]
+                },
+                {
+                    "class": "DepictionMarkdownView",
+                    "markdown": "CocoaInspector 0.2.4.\n\n| Jailbreak | Package |\n| --- | --- |\n| roothide | `wiki.qaq.inspector_0.2.4_iphoneos-arm64e.deb` |\n| rootless (/var/jb) | `wiki.qaq.inspector_0.2.4_iphoneos-arm64.deb` |\n\n```sh\nsudo dpkg -i <package>.deb\n```\n\nSHA-256 sums are in `SHA256SUMS`.\n\n- Commit: `9a3457f49c251ff0124338c232692c5a2a3df8de`\n"
+                },
+                {
+                    "class": "DepictionSeparatorView"
+                },
+                {
+                    "class": "DepictionLayerView",
+                    "views": [
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "v0.2.3",
+                            "fontWeight": "bold",
+                            "fontSize": 16
+                        },
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "2026-09-05",
+                            "fontWeight": "semibold",
+                            "fontSize": 16,
+                            "textColor": "#696969",
+                            "alignment": 2
+                        }
+                    ]
+                },
+                {
+                    "class": "DepictionMarkdownView",
+                    "markdown": "CocoaInspector 0.2.3.\n\n| Jailbreak | Package |\n| --- | --- |\n| roothide | `wiki.qaq.inspector_0.2.3_iphoneos-arm64e.deb` |\n| rootless (/var/jb) | `wiki.qaq.inspector_0.2.3_iphoneos-arm64.deb` |\n\n```sh\nsudo dpkg -i <package>.deb\n```\n\nSHA-256 sums are in `SHA256SUMS`.\n\n- Commit: `cd35ee2d6e40d76b6132dd3d6d538176e1b3ade9`\n"
+                },
+                {
+                    "class": "DepictionSeparatorView"
+                },
+                {
+                    "class": "DepictionLayerView",
+                    "views": [
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "v0.2.2",
+                            "fontWeight": "bold",
+                            "fontSize": 16
+                        },
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "2026-09-05",
+                            "fontWeight": "semibold",
+                            "fontSize": 16,
+                            "textColor": "#696969",
+                            "alignment": 2
+                        }
+                    ]
+                },
+                {
+                    "class": "DepictionMarkdownView",
+                    "markdown": "CocoaInspector 0.2.2.\n\n| Jailbreak | Package |\n| --- | --- |\n| roothide | `wiki.qaq.inspector_0.2.2_iphoneos-arm64e.deb` |\n| rootless (/var/jb) | `wiki.qaq.inspector_0.2.2_iphoneos-arm64.deb` |\n\n```sh\nsudo dpkg -i <package>.deb\n```\n\nSHA-256 sums are in `SHA256SUMS`.\n\n- Commit: `a7b056b9d9e9fa434ed73ef63376fe8914773127`\n"
+                },
+                {
+                    "class": "DepictionSeparatorView"
+                },
+                {
+                    "class": "DepictionLayerView",
+                    "views": [
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "v0.2.1",
+                            "fontWeight": "bold",
+                            "fontSize": 16
+                        },
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "2026-08-20",
+                            "fontWeight": "semibold",
+                            "fontSize": 16,
+                            "textColor": "#696969",
+                            "alignment": 2
+                        }
+                    ]
+                },
+                {
+                    "class": "DepictionMarkdownView",
+                    "markdown": "CocoaInspector 0.2.1.\n\n| Jailbreak | Package |\n| --- | --- |\n| roothide | `wiki.qaq.inspector_0.2.1_iphoneos-arm64e.deb` |\n| rootless (/var/jb) | `wiki.qaq.inspector_0.2.1_iphoneos-arm64.deb` |\n\n```sh\nsudo dpkg -i <package>.deb\n```\n\nSHA-256 sums are in `SHA256SUMS`.\n\n- Commit: `7c642dbd7678fa31786b15536b2e35a8edcbcde3`\n"
+                },
+                {
+                    "class": "DepictionSeparatorView"
+                },
+                {
+                    "class": "DepictionLayerView",
+                    "views": [
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "v0.2.0",
+                            "fontWeight": "bold",
+                            "fontSize": 16
+                        },
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "2026-08-20",
+                            "fontWeight": "semibold",
+                            "fontSize": 16,
+                            "textColor": "#696969",
+                            "alignment": 2
+                        }
+                    ]
+                },
+                {
+                    "class": "DepictionMarkdownView",
+                    "markdown": "CocoaInspector 0.2.0.\n\n| Jailbreak | Package |\n| --- | --- |\n| roothide | `wiki.qaq.inspector_0.2.0_iphoneos-arm64e.deb` |\n| rootless (/var/jb) | `wiki.qaq.inspector_0.2.0_iphoneos-arm64.deb` |\n\n```sh\nsudo dpkg -i <package>.deb\n```\n\nSHA-256 sums are in `SHA256SUMS`.\n\n- Commit: `b646c4c3fcfb891c2096238751d2c4559f526835`\n"
+                },
+                {
+                    "class": "DepictionSeparatorView"
+                },
+                {
+                    "class": "DepictionLayerView",
+                    "views": [
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "v0.1.4",
+                            "fontWeight": "bold",
+                            "fontSize": 16
+                        },
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "2026-08-17",
+                            "fontWeight": "semibold",
+                            "fontSize": 16,
+                            "textColor": "#696969",
+                            "alignment": 2
+                        }
+                    ]
+                },
+                {
+                    "class": "DepictionMarkdownView",
+                    "markdown": "CocoaInspector 0.1.4.\n\n| Jailbreak | Package |\n| --- | --- |\n| roothide | `wiki.qaq.inspector_0.1.4_iphoneos-arm64e.deb` |\n| rootless (/var/jb) | `wiki.qaq.inspector_0.1.4_iphoneos-arm64.deb` |\n\n```sh\nsudo dpkg -i <package>.deb\n```\n\nSHA-256 sums are in `SHA256SUMS`.\n\n- Commit: `19407058b5ccab38579629912dbb377679c27cbe`\n"
+                },
+                {
+                    "class": "DepictionSeparatorView"
+                },
+                {
+                    "class": "DepictionLayerView",
+                    "views": [
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "v0.1.3",
+                            "fontWeight": "bold",
+                            "fontSize": 16
+                        },
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "2026-08-03",
+                            "fontWeight": "semibold",
+                            "fontSize": 16,
+                            "textColor": "#696969",
+                            "alignment": 2
+                        }
+                    ]
+                },
+                {
+                    "class": "DepictionMarkdownView",
+                    "markdown": "CocoaInspector 0.1.3 for roothide.\n\n```sh\nsudo dpkg -i wiki.qaq.inspector_0.1.3_iphoneos-arm64e.deb\n```\n\n- SHA-256: `1caa734a1a4d751f49f4fbfdcc6b25459aa9c80d5c603366b2a37db21ec45634`\n- Commit: `f92d9332d15e3f10dffc14fed5c8beb505ebd2c9`\n"
+                },
+                {
+                    "class": "DepictionSeparatorView"
+                },
+                {
+                    "class": "DepictionLayerView",
+                    "views": [
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "v0.1.2",
+                            "fontWeight": "bold",
+                            "fontSize": 16
+                        },
+                        {
+                            "class": "DepictionLabelView",
+                            "text": "2026-08-03",
+                            "fontWeight": "semibold",
+                            "fontSize": 16,
+                            "textColor": "#696969",
+                            "alignment": 2
+                        }
+                    ]
+                },
+                {
+                    "class": "DepictionMarkdownView",
+                    "markdown": "CocoaInspector 0.1.2 for roothide.\n\n```sh\nsudo dpkg -i wiki.qaq.inspector_0.1.2_iphoneos-arm64e.deb\n```\n\n- SHA-256: `87dbcc70303521961b681f7e35c6fbbb2af3b61ccc92be753f08fbe85d22541c`\n- Commit: `9a8b5dd94cdc8146e56da1cd0a60821d129ad332`\n"
+                },
+                {
+                    "class": "DepictionSeparatorView"
+                }
+            ]
+        }
+    ]
+}
