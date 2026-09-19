@@ -150,6 +150,10 @@ harness:
 	trap 'rm -f "$$harness_bin"' EXIT; \
 	xcrun --sdk macosx swiftc -swift-version 5 -I "$(ROOT_DIR)/CInspectorXPC" "$(ROOT_DIR)"/Shared/*.swift "$(ROOT_DIR)/Tests/DataLayerHarness.swift" -o "$$harness_bin"; \
 	"$$harness_bin"
+	@harness_bin="$$(mktemp /tmp/cocoainspector-scene-harness.XXXXXX)"; \
+	trap 'rm -f "$$harness_bin"' EXIT; \
+	xcrun --sdk macosx swiftc -swift-version 5 "$(ROOT_DIR)/Inspector/SceneRestorationReset.swift" "$(ROOT_DIR)/Tests/SceneRestorationHarness.swift" -o "$$harness_bin"; \
+	"$$harness_bin"
 
 build: check harness bump-build
 	XCBUILD_LABEL=build-ios $(XCODEBUILD) \
