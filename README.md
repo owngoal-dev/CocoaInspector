@@ -11,9 +11,9 @@ Inspect running processes on your jailbroken iPhone or iPad. Monitor CPU usage, 
 
 ## Install
 
-Add the OwnGoal Studio repository in Sileo, Zebra, or another package manager:
+Add the OwnGoal Studio repository in your preferred package manager:
 
-**[Add to Sileo](sileo://source/https://apt.owngoal.dev)** · [apt.owngoal.dev](https://apt.owngoal.dev/)
+**[apt.owngoal.dev](https://apt.owngoal.dev/)**
 
 Packages are also on [GitHub Releases](https://github.com/owngoal-dev/CocoaInspector/releases). Choose the file that matches your jailbreak.
 

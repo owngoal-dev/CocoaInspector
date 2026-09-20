@@ -23,7 +23,7 @@ iOS process inspector for roothide and rootless jailbreaks: UIKit app (`Inspecto
 
 ## Install on a jailbroken device
 
-Install the package produced by `make deb` with your usual workflow (Sileo, `dpkg`, etc.) — the `iphoneos-arm64e` build on roothide, the `iphoneos-arm64` build on rootless. The archive installs `Inspector.app`, `usr/bin/cocoainspector`, `usr/libexec/cocoainspectord`, and the on-demand LaunchDaemon plist, at the jailbreak root (roothide) or under `/var/jb` (rootless).
+Install the package produced by `make deb` with your preferred package manager — the `iphoneos-arm64e` build on roothide, the `iphoneos-arm64` build on rootless. The archive installs `Inspector.app`, `usr/bin/cocoainspector`, `usr/libexec/cocoainspectord`, and the on-demand LaunchDaemon plist, at the jailbreak root (roothide) or under `/var/jb` (rootless).
 
 After install, validate with:
 
