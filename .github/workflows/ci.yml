@@ -114,12 +114,24 @@ jobs:
             echo "- Artifact: \`CocoaInspector-$GITHUB_SHA\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
+      # Both flavours package the one build, and neither strip nor ldid touches
+      # LC_UUID, so one set of dSYMs matches every shipped binary.
+      - name: Archive dSYMs
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(make --no-print-directory print-version)"
+          DSYM_ZIP="$PWD/build/Packages/CocoaInspector_${VERSION}_dSYMs.zip"
+          (cd "$DERIVED_DATA/Build/Products/Release-iphoneos" && zip -qry "$DSYM_ZIP" *.dSYM)
+          (cd build/Packages && shasum -a 256 "$(basename "$DSYM_ZIP")" >>SHA256SUMS)
+
       - name: Upload Debian packages
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: CocoaInspector-${{ github.sha }}
           path: |
             build/Packages/*.deb
+            build/Packages/*_dSYMs.zip
             build/Packages/SHA256SUMS
           if-no-files-found: error
           retention-days: 30
@@ -136,6 +148,8 @@ jobs:
           roothide_deb="$(make --no-print-directory print-deb-path FLAVOR=roothide)"
           rootless_deb="$(make --no-print-directory print-deb-path FLAVOR=rootless)"
           test -f build/Packages/SHA256SUMS
+          dsym_zip="build/Packages/CocoaInspector_${version}_dSYMs.zip"
+          test -f "$dsym_zip"
           notes="$(mktemp "${TMPDIR:-/tmp}/cocoa-inspector-notes.XXXXXX")"
           trap 'rm -f "$notes"' EXIT
           {
@@ -161,12 +175,12 @@ jobs:
             echo "- Commit: \`$GITHUB_SHA\`"
           } >>"$notes"
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            gh release upload "$GITHUB_REF_NAME" --clobber "$roothide_deb" "$rootless_deb" build/Packages/SHA256SUMS
+            gh release upload "$GITHUB_REF_NAME" --clobber "$roothide_deb" "$rootless_deb" "$dsym_zip" build/Packages/SHA256SUMS
             gh release edit "$GITHUB_REF_NAME" --notes-file "$notes"
           else
             gh release create "$GITHUB_REF_NAME" \
               --verify-tag \
               --title "$GITHUB_REF_NAME" \
               --notes-file "$notes" \
-              "$roothide_deb" "$rootless_deb" build/Packages/SHA256SUMS
+              "$roothide_deb" "$rootless_deb" "$dsym_zip" build/Packages/SHA256SUMS
           fi
