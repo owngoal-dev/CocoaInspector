@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: cocoa-inspector-${{ github.workflow }}-${{ github.ref }}
+  group: inspector-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -35,7 +35,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo "DERIVED_DATA=$RUNNER_TEMP/cocoa-inspector-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
+          echo "DERIVED_DATA=$RUNNER_TEMP/inspector-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
 
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -71,8 +71,8 @@ jobs:
           set -euo pipefail
           VERSION="$(make --no-print-directory print-version)"
           APP_PATH="$DERIVED_DATA/Build/Products/Release-iphoneos/Inspector.app"
-          DAEMON_PATH="$DERIVED_DATA/Build/Products/Release-iphoneos/cocoainspectord"
-          CLI_PATH="$DERIVED_DATA/Build/Products/Release-iphoneos/cocoainspector"
+          DAEMON_PATH="$DERIVED_DATA/Build/Products/Release-iphoneos/inspectord"
+          CLI_PATH="$DERIVED_DATA/Build/Products/Release-iphoneos/inspector"
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             test "$VERSION" = "${GITHUB_REF_NAME#v}"
           fi
@@ -111,7 +111,7 @@ jobs:
           cat build/Packages/SHA256SUMS
           {
             echo
-            echo "- Artifact: \`CocoaInspector-$GITHUB_SHA\`"
+            echo "- Artifact: \`Inspector-$GITHUB_SHA\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
       # Both flavours package the one build, and neither strip nor ldid touches
@@ -121,14 +121,14 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="$(make --no-print-directory print-version)"
-          DSYM_ZIP="$PWD/build/Packages/CocoaInspector_${VERSION}_dSYMs.zip"
+          DSYM_ZIP="$PWD/build/Packages/Inspector_${VERSION}_dSYMs.zip"
           (cd "$DERIVED_DATA/Build/Products/Release-iphoneos" && zip -qry "$DSYM_ZIP" *.dSYM)
           (cd build/Packages && shasum -a 256 "$(basename "$DSYM_ZIP")" >>SHA256SUMS)
 
       - name: Upload Debian packages
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: CocoaInspector-${{ github.sha }}
+          name: Inspector-${{ github.sha }}
           path: |
             build/Packages/*.deb
             build/Packages/*_dSYMs.zip
@@ -148,12 +148,12 @@ jobs:
           roothide_deb="$(make --no-print-directory print-deb-path FLAVOR=roothide)"
           rootless_deb="$(make --no-print-directory print-deb-path FLAVOR=rootless)"
           test -f build/Packages/SHA256SUMS
-          dsym_zip="build/Packages/CocoaInspector_${version}_dSYMs.zip"
+          dsym_zip="build/Packages/Inspector_${version}_dSYMs.zip"
           test -f "$dsym_zip"
-          notes="$(mktemp "${TMPDIR:-/tmp}/cocoa-inspector-notes.XXXXXX")"
+          notes="$(mktemp "${TMPDIR:-/tmp}/inspector-notes.XXXXXX")"
           trap 'rm -f "$notes"' EXIT
           {
-            echo "CocoaInspector $version."
+            echo "Inspector $version."
             echo
             echo "| Jailbreak | Package |"
             echo "| --- | --- |"

@@ -16,21 +16,21 @@
 			containerPortal = 50713A3C301FB35F00394FF6 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = CC1000000000000000000010;
-			remoteInfo = CocoaInspectord;
+			remoteInfo = Inspectord;
 		};
 		CC2000000000000000000020 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 50713A3C301FB35F00394FF6 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = CC2000000000000000000010;
-			remoteInfo = CocoaInspectorCLI;
+			remoteInfo = InspectorCLI;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		50713A44301FB35F00394FF6 /* Inspector.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Inspector.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		CC1000000000000000000001 /* cocoainspectord */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = cocoainspectord; sourceTree = BUILT_PRODUCTS_DIR; };
-		CC2000000000000000000001 /* cocoainspector */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = cocoainspector; sourceTree = BUILT_PRODUCTS_DIR; };
+		CC1000000000000000000001 /* inspectord */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = inspectord; sourceTree = BUILT_PRODUCTS_DIR; };
+		CC2000000000000000000001 /* inspector */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = inspector; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -49,14 +49,14 @@
 			path = Shared;
 			sourceTree = "<group>";
 		};
-		CC1000000000000000000003 /* CocoaInspectord */ = {
+		CC1000000000000000000003 /* Inspectord */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = CocoaInspectord;
+			path = Inspectord;
 			sourceTree = "<group>";
 		};
-		CC2000000000000000000002 /* CocoaInspectorCLI */ = {
+		CC2000000000000000000002 /* InspectorCLI */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = CocoaInspectorCLI;
+			path = InspectorCLI;
 			sourceTree = "<group>";
 		};
 		CC2000000000000000000003 /* InspectorClient */ = {
@@ -93,8 +93,8 @@
 				50713A46301FB35F00394FF6 /* Inspector */,
 				CC1000000000000000000002 /* Shared */,
 				CC2000000000000000000003 /* InspectorClient */,
-				CC1000000000000000000003 /* CocoaInspectord */,
-				CC2000000000000000000002 /* CocoaInspectorCLI */,
+				CC1000000000000000000003 /* Inspectord */,
+				CC2000000000000000000002 /* InspectorCLI */,
 				50713A45301FB35F00394FF6 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -103,8 +103,8 @@
 			isa = PBXGroup;
 			children = (
 				50713A44301FB35F00394FF6 /* Inspector.app */,
-				CC1000000000000000000001 /* cocoainspectord */,
-				CC2000000000000000000001 /* cocoainspector */,
+				CC1000000000000000000001 /* inspectord */,
+				CC2000000000000000000001 /* inspector */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -136,9 +136,9 @@
 			productReference = 50713A44301FB35F00394FF6 /* Inspector.app */;
 			productType = "com.apple.product-type.application";
 		};
-		CC1000000000000000000010 /* CocoaInspectord */ = {
+		CC1000000000000000000010 /* Inspectord */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CC1000000000000000000030 /* Build configuration list for PBXNativeTarget "CocoaInspectord" */;
+			buildConfigurationList = CC1000000000000000000030 /* Build configuration list for PBXNativeTarget "Inspectord" */;
 			buildPhases = (
 				CC1000000000000000000011 /* Sources */,
 				CC1000000000000000000012 /* Frameworks */,
@@ -147,16 +147,16 @@
 			);
 			fileSystemSynchronizedGroups = (
 				CC1000000000000000000002 /* Shared */,
-				CC1000000000000000000003 /* CocoaInspectord */,
+				CC1000000000000000000003 /* Inspectord */,
 			);
-			name = CocoaInspectord;
-			productName = cocoainspectord;
-			productReference = CC1000000000000000000001 /* cocoainspectord */;
+			name = Inspectord;
+			productName = inspectord;
+			productReference = CC1000000000000000000001 /* inspectord */;
 			productType = "com.apple.product-type.tool";
 		};
-		CC2000000000000000000010 /* CocoaInspectorCLI */ = {
+		CC2000000000000000000010 /* InspectorCLI */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CC2000000000000000000030 /* Build configuration list for PBXNativeTarget "CocoaInspectorCLI" */;
+			buildConfigurationList = CC2000000000000000000030 /* Build configuration list for PBXNativeTarget "InspectorCLI" */;
 			buildPhases = (
 				CC2000000000000000000011 /* Sources */,
 				CC2000000000000000000012 /* Frameworks */,
@@ -165,15 +165,15 @@
 			);
 			fileSystemSynchronizedGroups = (
 				CC1000000000000000000002 /* Shared */,
-				CC2000000000000000000002 /* CocoaInspectorCLI */,
+				CC2000000000000000000002 /* InspectorCLI */,
 				CC2000000000000000000003 /* InspectorClient */,
 			);
-			name = CocoaInspectorCLI;
+			name = InspectorCLI;
 			packageProductDependencies = (
 				CC2000000000000000000041 /* ArgumentParser */,
 			);
-			productName = cocoainspector;
-			productReference = CC2000000000000000000001 /* cocoainspector */;
+			productName = inspector;
+			productReference = CC2000000000000000000001 /* inspector */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -227,8 +227,8 @@
 			projectRoot = "";
 			targets = (
 				50713A43301FB35F00394FF6 /* Inspector */,
-				CC1000000000000000000010 /* CocoaInspectord */,
-				CC2000000000000000000010 /* CocoaInspectorCLI */,
+				CC1000000000000000000010 /* Inspectord */,
+				CC2000000000000000000010 /* InspectorCLI */,
 			);
 		};
 /* End PBXProject section */
@@ -262,12 +262,12 @@
 /* Begin PBXTargetDependency section */
 		CC1000000000000000000021 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = CC1000000000000000000010 /* CocoaInspectord */;
+			target = CC1000000000000000000010 /* Inspectord */;
 			targetProxy = CC1000000000000000000020 /* PBXContainerItemProxy */;
 		};
 		CC2000000000000000000021 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = CC2000000000000000000010 /* CocoaInspectorCLI */;
+			target = CC2000000000000000000010 /* InspectorCLI */;
 			targetProxy = CC2000000000000000000020 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -454,13 +454,13 @@
 			};
 			name = Release;
 		};
-		CC1000000000000000000031 /* Debug configuration for PBXNativeTarget "CocoaInspectord" */ = {
+		CC1000000000000000000031 /* Debug configuration for PBXNativeTarget "Inspectord" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				GENERATE_INFOPLIST_FILE = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = wiki.qaq.cocoainspectord;
-				PRODUCT_NAME = cocoainspectord;
+				PRODUCT_BUNDLE_IDENTIFIER = wiki.qaq.inspectord;
+				PRODUCT_NAME = inspectord;
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = singlefile;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
@@ -469,13 +469,13 @@
 			};
 			name = Debug;
 		};
-		CC1000000000000000000032 /* Release configuration for PBXNativeTarget "CocoaInspectord" */ = {
+		CC1000000000000000000032 /* Release configuration for PBXNativeTarget "Inspectord" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				GENERATE_INFOPLIST_FILE = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = wiki.qaq.cocoainspectord;
-				PRODUCT_NAME = cocoainspectord;
+				PRODUCT_BUNDLE_IDENTIFIER = wiki.qaq.inspectord;
+				PRODUCT_NAME = inspectord;
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
@@ -484,14 +484,15 @@
 			};
 			name = Release;
 		};
-		CC2000000000000000000031 /* Debug configuration for PBXNativeTarget "CocoaInspectorCLI" */ = {
+		CC2000000000000000000031 /* Debug configuration for PBXNativeTarget "InspectorCLI" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				GENERATE_INFOPLIST_FILE = YES;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../lib/cocoainspector";
-				PRODUCT_BUNDLE_IDENTIFIER = wiki.qaq.cocoainspector.cli;
-				PRODUCT_NAME = cocoainspector;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../lib/inspector";
+				PRODUCT_BUNDLE_IDENTIFIER = wiki.qaq.inspector.cli;
+				PRODUCT_MODULE_NAME = InspectorCLI;
+				PRODUCT_NAME = inspector;
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = singlefile;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
@@ -500,14 +501,15 @@
 			};
 			name = Debug;
 		};
-		CC2000000000000000000032 /* Release configuration for PBXNativeTarget "CocoaInspectorCLI" */ = {
+		CC2000000000000000000032 /* Release configuration for PBXNativeTarget "InspectorCLI" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				GENERATE_INFOPLIST_FILE = YES;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../lib/cocoainspector";
-				PRODUCT_BUNDLE_IDENTIFIER = wiki.qaq.cocoainspector.cli;
-				PRODUCT_NAME = cocoainspector;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../lib/inspector";
+				PRODUCT_BUNDLE_IDENTIFIER = wiki.qaq.inspector.cli;
+				PRODUCT_MODULE_NAME = InspectorCLI;
+				PRODUCT_NAME = inspector;
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
@@ -535,19 +537,19 @@
 			);
 			defaultConfigurationName = Release;
 		};
-		CC1000000000000000000030 /* Build configuration list for PBXNativeTarget "CocoaInspectord" */ = {
+		CC1000000000000000000030 /* Build configuration list for PBXNativeTarget "Inspectord" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				CC1000000000000000000031 /* Debug configuration for PBXNativeTarget "CocoaInspectord" */,
-				CC1000000000000000000032 /* Release configuration for PBXNativeTarget "CocoaInspectord" */,
+				CC1000000000000000000031 /* Debug configuration for PBXNativeTarget "Inspectord" */,
+				CC1000000000000000000032 /* Release configuration for PBXNativeTarget "Inspectord" */,
 			);
 			defaultConfigurationName = Release;
 		};
-		CC2000000000000000000030 /* Build configuration list for PBXNativeTarget "CocoaInspectorCLI" */ = {
+		CC2000000000000000000030 /* Build configuration list for PBXNativeTarget "InspectorCLI" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				CC2000000000000000000031 /* Debug configuration for PBXNativeTarget "CocoaInspectorCLI" */,
-				CC2000000000000000000032 /* Release configuration for PBXNativeTarget "CocoaInspectorCLI" */,
+				CC2000000000000000000031 /* Debug configuration for PBXNativeTarget "InspectorCLI" */,
+				CC2000000000000000000032 /* Release configuration for PBXNativeTarget "InspectorCLI" */,
 			);
 			defaultConfigurationName = Release;
 		};

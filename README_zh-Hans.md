@@ -15,7 +15,7 @@
 
 **[apt.owngoal.dev](https://apt.owngoal.dev/)**
 
-也可从 [GitHub Releases](https://github.com/owngoal-dev/CocoaInspector/releases) 下载。请选择与越狱匹配的文件。
+也可从 [GitHub Releases](https://github.com/owngoal-dev/Inspector/releases) 下载。请选择与越狱匹配的文件。
 
 | 越狱 | 软件包 |
 | --- | --- |
@@ -31,21 +31,21 @@
 - **进程详情**：线程、打开的文件和套接字、Mach 端口、已加载模块、沙盒状态，以及磁盘和网络使用情况。
 - **停止进程**：在详情页请求退出或强制退出。无法停止 PID 1。
 - **导出**：将进程快照共享为文件。
-- **命令行**：通过 `cocoainspector` 在终端中查看进程信息并监测 CPU 占用。
+- **命令行**：通过 `inspector` 在终端中查看进程信息并监测 CPU 占用。
 
 ## 命令行
 
 ```sh
-sudo cocoainspector list
-sudo cocoainspector inspect 1
-sudo cocoainspector details 1 all
-sudo cocoainspector watch --count 10 --interval-ms 1000
-sudo cocoainspector self-test
+sudo inspector list
+sudo inspector inspect 1
+sudo inspector details 1 all
+sudo inspector watch --count 10 --interval-ms 1000
+sudo inspector self-test
 ```
 
 `self-test` 为只读。仅在需要用 CLI 的子进程验证「请求退出」和「强制退出」时加上 `--signal`，它不会针对系统进程。
 
-在 rootless 越狱上，该工具位于 `/var/jb/usr/bin/cocoainspector`。
+在 rootless 越狱上，该工具位于 `/var/jb/usr/bin/inspector`。
 
 ## 从源码构建
 

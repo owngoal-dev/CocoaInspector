@@ -9,7 +9,7 @@ enum InspectorProtocol {
     // /var/jb prefix. See PeerAuthenticator.resolveInstalledClientPaths().
     static let clientPaths = [
         "/Applications/Inspector.app/Inspector",
-        "/usr/bin/cocoainspector",
+        "/usr/bin/inspector",
     ]
     static let signalTicketByteCount = 32
     static let maximumMessageDataByteCount = 2 * 1_024 * 1_024

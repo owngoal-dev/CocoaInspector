@@ -15,7 +15,7 @@ Add the OwnGoal Studio repository in your preferred package manager:
 
 **[apt.owngoal.dev](https://apt.owngoal.dev/)**
 
-Packages are also on [GitHub Releases](https://github.com/owngoal-dev/CocoaInspector/releases). Choose the file that matches your jailbreak.
+Packages are also on [GitHub Releases](https://github.com/owngoal-dev/Inspector/releases). Choose the file that matches your jailbreak.
 
 | Jailbreak | Package |
 | --- | --- |
@@ -31,21 +31,21 @@ Requires iOS 13 or later. Inspector is not for the App Store.
 - **Process details**: Threads, open files and sockets, Mach ports, loaded modules, sandbox status, and disk and network use.
 - **Stop a process**: Ask It to Quit or Force Quit from the detail screen. PID 1 cannot be stopped.
 - **Export**: Share a snapshot of a process as a file.
-- **Command line**: Inspect processes and monitor CPU usage from a terminal with `cocoainspector`.
+- **Command line**: Inspect processes and monitor CPU usage from a terminal with `inspector`.
 
 ## Command Line
 
 ```sh
-sudo cocoainspector list
-sudo cocoainspector inspect 1
-sudo cocoainspector details 1 all
-sudo cocoainspector watch --count 10 --interval-ms 1000
-sudo cocoainspector self-test
+sudo inspector list
+sudo inspector inspect 1
+sudo inspector details 1 all
+sudo inspector watch --count 10 --interval-ms 1000
+sudo inspector self-test
 ```
 
 `self-test` is read-only. Add `--signal` only when you want to exercise Ask It to Quit and Force Quit on a child of the CLI — it does not target a system process.
 
-On a rootless jailbreak, the tool is `/var/jb/usr/bin/cocoainspector`.
+On a rootless jailbreak, the tool is `/var/jb/usr/bin/inspector`.
 
 ## Build from Source
 

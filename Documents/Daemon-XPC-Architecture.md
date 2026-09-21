@@ -4,7 +4,7 @@
 
 ## 目标和硬约束
 
-- Inspector 是 SwiftUI userland App，只负责请求、派生展示数据和用户交互；`cocoainspector` CLI 使用同一个 client/data 层做无 UI 验证和运维。
+- Inspector 是 SwiftUI userland App，只负责请求、派生展示数据和用户交互；`inspector` CLI 使用同一个 client/data 层做无 UI 验证和运维。
 - Inspector daemon 是纯 Swift root LaunchDaemon，只负责特权采集和被明确请求的受控操作。
 - App 和 CLI 两个 userland target 通过同一个低层 XPC Mach service 与 daemon 通信。
 - 所有产品代码必须是 Swift；私有 C ABI 符号也由 Swift 声明/动态绑定，不增加 bridging header 或 C/Objective-C shim。
@@ -36,7 +36,7 @@
  root/mobile platform + no-sandbox                   root / unsandboxed
 
  +----------------------------------+      XPC       +----------------------------------+
- | Inspector.app / cocoainspector  |<------------->| cocoainspectord (Swift)           |
+ | Inspector.app / inspector  |<------------->| inspectord (Swift)           |
  |                                  | Mach service   |                                  |
  |  +----------------------------+  |               |  +----------------------------+  |
  |  | View / sort / filter       |  |               |  | PeerAuthenticator          |  |
@@ -76,11 +76,11 @@ Inspector.xcodeproj
 |   +-- UI
 |   +-- shared XPC client / snapshot reducer
 |
-+-- CocoaInspectorCLI      iOS command-line target, Swift
++-- InspectorCLI      iOS command-line target, Swift
 |   +-- Swift Argument Parser commands
 |   +-- shared XPC client / snapshot reducer
 |
-+-- CocoaInspectord        iOS Mach-O executable target, Swift
++-- Inspectord        iOS Mach-O executable target, Swift
     +-- XPC listener
     +-- peer authentication
     +-- collectors
@@ -93,9 +93,9 @@ Inspector.xcodeproj
 
 ```text
 /Applications/Inspector.app/Inspector
-/usr/bin/cocoainspector
-/usr/libexec/cocoainspectord
-/Library/LaunchDaemons/wiki.qaq.cocoainspectord.plist
+/usr/bin/inspector
+/usr/libexec/inspectord
+/Library/LaunchDaemons/wiki.qaq.inspectord.plist
 ```
 
 daemon 用自身 `proc_pidpath` 推导安装根目录再拼出 client 路径，因此两种 jailbreak 布局共用同一份 `InspectorProtocol.clientPaths`。
@@ -106,8 +106,8 @@ daemon、App executable 和 CLI 由 deb 以 root:wheel 安装，且不可被 gro
 
 推荐 plist 语义：
 
-- `Label`: `wiki.qaq.cocoainspectord`。
-- `ProgramArguments`: `<prefix>/usr/libexec/cocoainspectord`；roothide 前缀为空并在安装时映射到当前随机 jbroot，rootless 前缀为 `/var/jb`。
+- `Label`: `wiki.qaq.inspectord`。
+- `ProgramArguments`: `<prefix>/usr/libexec/inspectord`；roothide 前缀为空并在安装时映射到当前随机 jbroot，rootless 前缀为 `/var/jb`。
 - `UserName`: `root`。
 - `MachServices`: 只发布 `wiki.qaq.inspector.service`。
 - 不设置 `RunAtLoad=true`。
@@ -155,7 +155,7 @@ Apple 的 header 明确说明 `xpc_connection_set_peer_code_signing_requirement`
 
 ### 6.1 第一层：sandbox mach lookup
 
-Inspector App 和 `cocoainspector` CLI 签名加入：
+Inspector App 和 `inspector` CLI 签名加入：
 
 ```text
 com.apple.security.exception.mach-lookup.global-name

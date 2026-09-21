@@ -9,12 +9,12 @@ Description: Live process inspector for @FLAVOR@ jailbreaks
  pause the list to hold a moment still. Open a process for its threads, open
  files and sockets, Mach ports, loaded modules, sandbox status and disk and
  network use, then quit it, force quit it, or export the whole report. The
- `cocoainspector` command answers the same questions from a terminal. Available
+ `inspector` command answers the same questions from a terminal. Available
  in English, Simplified Chinese, Japanese, Russian, German, French, Spanish and
  Arabic.
-Icon: https://owngoal-dev.github.io/CocoaInspector/icon.png
-Depiction: https://owngoal-dev.github.io/CocoaInspector/
-SileoDepiction: https://owngoal-dev.github.io/CocoaInspector/depiction.json
+Icon: https://owngoal-dev.github.io/Inspector/icon.png
+Depiction: https://owngoal-dev.github.io/Inspector/
+SileoDepiction: https://owngoal-dev.github.io/Inspector/depiction.json
 Maintainer: OwnGoal Studio <not-gonna-reply@owngoal.dev>
 Author: OwnGoal Studio <not-gonna-reply@owngoal.dev>
 Section: Utilities

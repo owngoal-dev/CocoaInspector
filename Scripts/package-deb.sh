@@ -83,9 +83,9 @@ chmod 0755 "$staging"
 
 debian="$staging/DEBIAN"
 installed_app="$staging$install_prefix/Applications/Inspector.app"
-installed_daemon="$staging$install_prefix/usr/libexec/cocoainspectord"
-installed_cli="$staging$install_prefix/usr/bin/cocoainspector"
-installed_plist="$staging$install_prefix/Library/LaunchDaemons/wiki.qaq.cocoainspectord.plist"
+installed_daemon="$staging$install_prefix/usr/libexec/inspectord"
+installed_cli="$staging$install_prefix/usr/bin/inspector"
+installed_plist="$staging$install_prefix/Library/LaunchDaemons/wiki.qaq.inspectord.plist"
 mkdir -p "$debian" "$(dirname "$installed_app")" "$(dirname "$installed_daemon")" "$(dirname "$installed_cli")" "$(dirname "$installed_plist")"
 /usr/bin/ditto "$app_bundle" "$installed_app"
 /usr/bin/ditto "$daemon_binary" "$installed_daemon"
@@ -94,7 +94,7 @@ mkdir -p "$debian" "$(dirname "$installed_app")" "$(dirname "$installed_daemon")
 # back-deployed runtime in its Frameworks; the CLI has no bundle, so it gets
 # the same copy beside it, where its rpath looks after /usr/lib/swift.
 concurrency_runtime="$installed_app/Frameworks/libswift_Concurrency.dylib"
-installed_cli_runtime="$staging$install_prefix/usr/lib/cocoainspector/libswift_Concurrency.dylib"
+installed_cli_runtime="$staging$install_prefix/usr/lib/inspector/libswift_Concurrency.dylib"
 [[ -f "$concurrency_runtime" ]] || {
     echo "error: app bundle does not embed libswift_Concurrency.dylib" >&2
     exit 66
@@ -107,7 +107,7 @@ rm -rf "$installed_app/_CodeSignature"
 rm -f "$installed_app/embedded.mobileprovision"
 chmod 0755 "$installed_daemon" "$installed_cli"
 chmod 0644 "$installed_plist"
-[[ "$(/usr/libexec/PlistBuddy -c 'Print :ProgramArguments:0' "$installed_plist")" == "$install_prefix/usr/libexec/cocoainspectord" ]] || {
+[[ "$(/usr/libexec/PlistBuddy -c 'Print :ProgramArguments:0' "$installed_plist")" == "$install_prefix/usr/libexec/inspectord" ]] || {
     echo "error: launch daemon plist does not point at the installed daemon" >&2
     exit 65
 }
@@ -181,9 +181,9 @@ dpkg-deb --root-owner-group -Zzstd -b "$staging" "$temporary_deb"
 [[ "$(dpkg-deb -f "$temporary_deb" Architecture)" == "$architecture" ]]
 contents="$(dpkg-deb --contents "$temporary_deb")"
 grep -F ".$install_prefix/Applications/Inspector.app/Inspector" <<<"$contents" >/dev/null
-grep -F ".$install_prefix/usr/libexec/cocoainspectord" <<<"$contents" >/dev/null
-grep -F ".$install_prefix/usr/bin/cocoainspector" <<<"$contents" >/dev/null
-grep -F ".$install_prefix/Library/LaunchDaemons/wiki.qaq.cocoainspectord.plist" <<<"$contents" >/dev/null
+grep -F ".$install_prefix/usr/libexec/inspectord" <<<"$contents" >/dev/null
+grep -F ".$install_prefix/usr/bin/inspector" <<<"$contents" >/dev/null
+grep -F ".$install_prefix/Library/LaunchDaemons/wiki.qaq.inspectord.plist" <<<"$contents" >/dev/null
 
 mv -f "$temporary_deb" "$output_deb"
 echo "Packaged Inspector ($flavor): $output_deb"

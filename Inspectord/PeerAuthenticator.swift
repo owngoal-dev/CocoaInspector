@@ -28,7 +28,7 @@ final class PeerAuthenticator {
     }
 
     private func resolveInstalledClientPaths() -> [String] {
-        let suffix = "/usr/libexec/cocoainspectord"
+        let suffix = "/usr/libexec/inspectord"
         guard let daemonPath = processPath(pid: getpid()),
               daemonPath.hasSuffix(suffix) else { return [] }
         let root = daemonPath.dropLast(suffix.count)

@@ -34,11 +34,11 @@ for payload in \
     "/Applications/Inspector.app/Inspector" \
     "/Applications/Inspector.app/AppIcon60x60@2x.png" \
     "/Applications/Inspector.app/AppIcon76x76@2x~ipad.png" \
-    "/usr/libexec/cocoainspectord" \
-    "/usr/bin/cocoainspector" \
+    "/usr/libexec/inspectord" \
+    "/usr/bin/inspector" \
     "/Applications/Inspector.app/Frameworks/libswift_Concurrency.dylib" \
-    "/usr/lib/cocoainspector/libswift_Concurrency.dylib" \
-    "/Library/LaunchDaemons/wiki.qaq.cocoainspectord.plist"
+    "/usr/lib/inspector/libswift_Concurrency.dylib" \
+    "/Library/LaunchDaemons/wiki.qaq.inspectord.plist"
 do
     grep -F ".$install_prefix$payload" <<<"$contents" >/dev/null || {
         echo "error: package is missing $install_prefix$payload" >&2
@@ -68,11 +68,11 @@ fi
 payload_root="$(mktemp -d "${TMPDIR:-/tmp}/inspector-verify.XXXXXX")"
 trap 'rm -rf "$payload_root"' EXIT
 dpkg-deb -x "$deb" "$payload_root"
-installed_plist="$payload_root$install_prefix/Library/LaunchDaemons/wiki.qaq.cocoainspectord.plist"
-expect "LaunchDaemon label" "$(/usr/libexec/PlistBuddy -c 'Print :Label' "$installed_plist")" "wiki.qaq.cocoainspectord"
+installed_plist="$payload_root$install_prefix/Library/LaunchDaemons/wiki.qaq.inspectord.plist"
+expect "LaunchDaemon label" "$(/usr/libexec/PlistBuddy -c 'Print :Label' "$installed_plist")" "wiki.qaq.inspectord"
 expect "LaunchDaemon program" \
     "$(/usr/libexec/PlistBuddy -c 'Print :ProgramArguments:0' "$installed_plist")" \
-    "$install_prefix/usr/libexec/cocoainspectord"
+    "$install_prefix/usr/libexec/inspectord"
 # On-demand is the contract: no KeepAlive, no RunAtLoad.
 for key in KeepAlive RunAtLoad; do
     if /usr/libexec/PlistBuddy -c "Print :$key" "$installed_plist" >/dev/null 2>&1; then
@@ -92,7 +92,7 @@ for script in postinst prerm postrm; do
         echo "error: $script has a word glued to a redirect" >&2
         exit 65
     fi
-    expect "$script daemon label" "$(grep -c '^label=wiki.qaq.cocoainspectord$' <<<"$body")" "1"
+    expect "$script daemon label" "$(grep -c '^label=wiki.qaq.inspectord$' <<<"$body")" "1"
 done
 
 dpkg-deb -I "$deb" postinst \

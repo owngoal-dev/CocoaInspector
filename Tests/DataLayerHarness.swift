@@ -8,7 +8,7 @@ enum DataLayerHarness {
         try testMalformedSnapshotRejection()
         try testMessageSizeLimit()
         testSnapshotReduction()
-        print("CocoaInspector data-layer harness passed")
+        print("Inspector data-layer harness passed")
     }
 
     private static func testSnapshotRoundTrip() throws {

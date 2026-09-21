@@ -39,6 +39,6 @@ enum SceneRestorationHarness {
             precondition(settings == Data("keep".utf8))
             precondition(otherState == Data("keep".utf8))
         }
-        print("CocoaInspector scene-restoration harness passed")
+        print("Inspector scene-restoration harness passed")
     }
 }

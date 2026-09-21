@@ -9,8 +9,8 @@ SCHEME              := Inspector
 CONFIGURATION       ?= Release
 DERIVED_DATA        ?= /private/tmp/inspector-deriveddata
 APP_BUNDLE          := $(DERIVED_DATA)/Build/Products/$(CONFIGURATION)-iphoneos/Inspector.app
-DAEMON_BINARY       := $(DERIVED_DATA)/Build/Products/$(CONFIGURATION)-iphoneos/cocoainspectord
-CLI_BINARY          := $(DERIVED_DATA)/Build/Products/$(CONFIGURATION)-iphoneos/cocoainspector
+DAEMON_BINARY       := $(DERIVED_DATA)/Build/Products/$(CONFIGURATION)-iphoneos/inspectord
+CLI_BINARY          := $(DERIVED_DATA)/Build/Products/$(CONFIGURATION)-iphoneos/inspector
 PACKAGE_ID          ?= wiki.qaq.inspector
 PROJECT_OBJECT_VERSION := 77
 
@@ -47,9 +47,9 @@ VERSION_APPLIER     := $(ROOT_DIR)/Scripts/apply-version.sh
 DEB_VERIFIER        := $(ROOT_DIR)/Scripts/verify-deb.sh
 CONTROL_TEMPLATE    := $(ROOT_DIR)/Packaging/DEBIAN/control
 ENTITLEMENTS        := $(ROOT_DIR)/Packaging/Inspector.entitlements
-DAEMON_ENTITLEMENTS := $(ROOT_DIR)/Packaging/CocoaInspectord.entitlements
-CLI_ENTITLEMENTS    := $(ROOT_DIR)/Packaging/CocoaInspectorCLI.entitlements
-LAUNCH_DAEMON       := $(ROOT_DIR)/Packaging/wiki.qaq.cocoainspectord.plist
+DAEMON_ENTITLEMENTS := $(ROOT_DIR)/Packaging/Inspectord.entitlements
+CLI_ENTITLEMENTS    := $(ROOT_DIR)/Packaging/InspectorCLI.entitlements
+LAUNCH_DAEMON       := $(ROOT_DIR)/Packaging/wiki.qaq.inspectord.plist
 
 XCODEBUILD := $(XCODEBUILD_WRAPPER) \
 	-project "$(PROJECT)" \
@@ -148,16 +148,16 @@ check:
 			&& { echo "error: $$hook must not call uicache; uikittools triggers register the app" >&2; exit 65; } || true; \
 	done
 	@targets="$$(xcodebuild -project "$(PROJECT)" -list)"; \
-	grep -F "CocoaInspectord" <<<"$$targets" >/dev/null; \
-	grep -F "CocoaInspectorCLI" <<<"$$targets" >/dev/null; \
+	grep -F "Inspectord" <<<"$$targets" >/dev/null; \
+	grep -F "InspectorCLI" <<<"$$targets" >/dev/null; \
 	grep -F "Inspector" <<<"$$targets" >/dev/null
 
 harness:
-	@harness_bin="$$(mktemp /tmp/cocoainspector-harness.XXXXXX)"; \
+	@harness_bin="$$(mktemp /tmp/inspector-harness.XXXXXX)"; \
 	trap 'rm -f "$$harness_bin"' EXIT; \
 	xcrun --sdk macosx swiftc -swift-version 5 -I "$(ROOT_DIR)/CInspectorXPC" "$(ROOT_DIR)"/Shared/*.swift "$(ROOT_DIR)/Tests/DataLayerHarness.swift" -o "$$harness_bin"; \
 	"$$harness_bin"
-	@harness_bin="$$(mktemp /tmp/cocoainspector-scene-harness.XXXXXX)"; \
+	@harness_bin="$$(mktemp /tmp/inspector-scene-harness.XXXXXX)"; \
 	trap 'rm -f "$$harness_bin"' EXIT; \
 	xcrun --sdk macosx swiftc -swift-version 5 "$(ROOT_DIR)/Inspector/SceneRestorationReset.swift" "$(ROOT_DIR)/Tests/SceneRestorationHarness.swift" -o "$$harness_bin"; \
 	"$$harness_bin"

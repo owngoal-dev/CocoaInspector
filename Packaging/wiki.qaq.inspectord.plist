@@ -3,10 +3,10 @@
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>wiki.qaq.cocoainspectord</string>
+	<string>wiki.qaq.inspectord</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>@PREFIX@/usr/libexec/cocoainspectord</string>
+		<string>@PREFIX@/usr/libexec/inspectord</string>
 	</array>
 	<key>UserName</key>
 	<string>root</string>

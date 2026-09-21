@@ -14,7 +14,7 @@ find_tool() {
 
 # Named once, alone on its line: see postinst for why the id never sits next
 # to a redirect.
-label=wiki.qaq.cocoainspectord
+label=wiki.qaq.inspectord
 if [ "${1:-}" = remove ] || [ "${1:-}" = deconfigure ]; then
     if launchctl="$(find_tool launchctl)"; then
         "$launchctl" bootout "system/$label" 2>/dev/null || true

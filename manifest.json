@@ -1,6 +1,6 @@
 {
   "name": "Inspector",
   "description": "Live process inspector for jailbroken iOS",
-  "icon": "https://owngoal-dev.github.io/CocoaInspector/icon.png",
-  "homepage": "https://github.com/owngoal-dev/CocoaInspector"
+  "icon": "https://owngoal-dev.github.io/Inspector/icon.png",
+  "homepage": "https://github.com/owngoal-dev/Inspector"
 }

@@ -10,10 +10,10 @@ private func inspectorCLIProcessPath(
 ) -> Int32
 
 @main
-struct CocoaInspectorCommand: AsyncParsableCommand {
+struct InspectorCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
-        commandName: "cocoainspector",
-        abstract: "Inspect processes through cocoainspectord.",
+        commandName: "inspector",
+        abstract: "Inspect processes through inspectord.",
         subcommands: [
             SelfTestCommand.self,
             ListProcesses.self,
@@ -36,8 +36,8 @@ struct SelfTestCommand: AsyncParsableCommand {
     var testsSignal = false
 
     mutating func run() async throws {
-        try await CocoaInspectorOperations.withSession {
-            try await CocoaInspectorOperations.selfTest($0, testSignal: testsSignal)
+        try await CommandLineOperations.withSession {
+            try await CommandLineOperations.selfTest($0, testSignal: testsSignal)
         }
     }
 }
@@ -49,8 +49,8 @@ struct ListProcesses: AsyncParsableCommand {
     )
 
     mutating func run() async throws {
-        try await CocoaInspectorOperations.withSession {
-            CocoaInspectorOperations.printList(try await $0.sample().snapshot.processes)
+        try await CommandLineOperations.withSession {
+            CommandLineOperations.printList(try await $0.sample().snapshot.processes)
         }
     }
 }
@@ -66,12 +66,12 @@ struct InspectProcess: AsyncParsableCommand {
 
     mutating func run() async throws {
         guard pid >= 0 else { throw ValidationError("PID must be nonnegative.") }
-        try await CocoaInspectorOperations.withSession {
+        try await CommandLineOperations.withSession {
             let processes = try await $0.sample(collectors: .all).snapshot.processes
             guard let process = processes.first(where: { $0.pid == pid }) else {
                 throw CommandFailure("process \(pid) was not found")
             }
-            try CocoaInspectorOperations.printJSON(process)
+            try CommandLineOperations.printJSON(process)
         }
     }
 }
@@ -110,13 +110,13 @@ struct ProcessDetails: AsyncParsableCommand {
 
     mutating func run() async throws {
         guard pid >= 0 else { throw ValidationError("PID must be nonnegative.") }
-        try await CocoaInspectorOperations.withSession {
-            let identity = try await CocoaInspectorOperations.identity(pid, session: $0)
+        try await CommandLineOperations.withSession {
+            let identity = try await CommandLineOperations.identity(pid, session: $0)
             var results = [ProcessDetailSnapshot]()
             for value in kind.values {
                 results.append(try await $0.details(value, for: identity))
             }
-            try CocoaInspectorOperations.printJSON(DetailOutput(results: results))
+            try CommandLineOperations.printJSON(DetailOutput(results: results))
         }
     }
 }
@@ -144,8 +144,8 @@ struct WatchProcesses: AsyncParsableCommand {
         guard (100...30_000).contains(intervalMilliseconds) else {
             throw ValidationError("Interval must be between 100 and 30000 milliseconds.")
         }
-        try await CocoaInspectorOperations.withSession {
-            try await CocoaInspectorOperations.watch(
+        try await CommandLineOperations.withSession {
+            try await CommandLineOperations.watch(
                 $0,
                 count: count,
                 interval: UInt64(intervalMilliseconds) * 1_000_000
@@ -179,8 +179,8 @@ struct SignalProcess: AsyncParsableCommand {
     mutating func run() async throws {
         guard pid > 1 else { throw ValidationError("PID must be greater than 1.") }
         guard yes else { throw ValidationError("Pass --yes to confirm the signal operation.") }
-        try await CocoaInspectorOperations.withSession {
-            try await CocoaInspectorOperations.send(signal.value, to: pid, session: $0)
+        try await CommandLineOperations.withSession {
+            try await CommandLineOperations.send(signal.value, to: pid, session: $0)
         }
     }
 }
@@ -201,7 +201,7 @@ struct SignalTestChild: ParsableCommand {
     }
 }
 
-enum CocoaInspectorOperations {
+enum CommandLineOperations {
     static func withSession(
         _ body: (ProcessDataSession) async throws -> Void
     ) async throws {
