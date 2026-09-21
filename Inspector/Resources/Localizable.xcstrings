@@ -4969,85 +4969,85 @@
         }
       }
     },
-    "Inspector Was Updated": {
+    "Inspector Was Updated or Removed": {
       "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "تم تحديث Inspector"
+            "value": "تم تحديث Inspector أو إزالته"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Inspector wurde aktualisiert"
+            "value": "Inspector wurde aktualisiert oder entfernt"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Inspector Was Updated"
+            "value": "Inspector Was Updated or Removed"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Inspector se ha actualizado"
+            "value": "Inspector se ha actualizado o se ha eliminado"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Inspector a été mis à jour"
+            "value": "Inspector a été mis à jour ou supprimé"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Inspector è stato aggiornato"
+            "value": "Inspector è stato aggiornato o rimosso"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Inspector がアップデートされました"
+            "value": "Inspector がアップデートまたは削除されました"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "Inspector이(가) 업데이트됨"
+            "value": "Inspector이(가) 업데이트되었거나 제거됨"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "O Inspector foi atualizado"
+            "value": "O Inspector foi atualizado ou removido"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Inspector обновлено"
+            "value": "Inspector обновлено или удалено"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Inspector đã được cập nhật"
+            "value": "Inspector đã được cập nhật hoặc gỡ bỏ"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "Inspector 已更新"
+            "value": "Inspector 已更新或被移除"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "Inspector 已更新"
+            "value": "Inspector 已更新或已被移除"
           }
         }
       }
@@ -12522,6 +12522,89 @@
         }
       }
     },
+    "This copy is no longer installed. Quit it and open Inspector again to continue.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لم تعد هذه النسخة مثبتة. أنهِها وافتح Inspector من جديد للمتابعة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Kopie ist nicht mehr installiert. Beende sie und öffne Inspector erneut, um fortzufahren."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This copy is no longer installed. Quit it and open Inspector again to continue."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta copia ya no está instalada. Sal de ella y vuelve a abrir Inspector para continuar."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cette copie n’est plus installée. Quittez-la et rouvrez Inspector pour continuer."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questa copia non è più installata. Chiudila e riapri Inspector per continuare."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このコピーはすでにインストールされていません。終了してから Inspector を開き直してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 사본은 더 이상 설치되어 있지 않습니다. 계속하려면 종료한 뒤 Inspector을(를) 다시 여십시오."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta cópia não está mais instalada. Encerre-a e abra o Inspector novamente para continuar."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Эта копия больше не установлена. Закройте её и откройте Inspector снова, чтобы продолжить."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bản này không còn được cài đặt. Hãy thoát và mở lại Inspector để tiếp tục."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此副本已不再安装。请退出并重新打开 Inspector 以继续。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此副本已不再安裝。請結束並重新打開 Inspector 以繼續。"
+          }
+        }
+      }
+    },
     "This Device": {
       "extractionState": "manual",
       "localizations": {
@@ -12684,89 +12767,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "這會立即結束程序，未儲存的內容可能會遺失。"
-          }
-        }
-      }
-    },
-    "This is still the old version. Quit Inspector and open it again to use the new one.": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ما زال هذا هو الإصدار القديم. أنهِ Inspector ثم افتحه مجددًا لاستخدام الإصدار الجديد."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dies ist noch die alte Version. Beende Inspector und öffne es erneut, um die neue zu verwenden."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "This is still the old version. Quit Inspector and open it again to use the new one."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Esta sigue siendo la versión anterior. Cierra Inspector y vuelve a abrirlo para usar la nueva."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ceci est encore l’ancienne version. Quittez Inspector et rouvrez-le pour utiliser la nouvelle."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Questa è ancora la versione precedente. Esci da Inspector e riaprilo per usare quella nuova."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "これはまだ古いバージョンです。新しいバージョンを使うには、Inspector を終了してから開き直してください。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "아직 이전 버전입니다. 새 버전을 사용하려면 Inspector을(를) 종료하고 다시 여십시오."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Esta ainda é a versão antiga. Encerre o Inspector e abra-o novamente para usar a nova."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Это всё ещё старая версия. Закройте Inspector и откройте снова, чтобы использовать новую."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Đây vẫn là phiên bản cũ. Hãy thoát Inspector rồi mở lại để dùng phiên bản mới."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "当前仍是旧版本。请退出 Inspector 并重新打开以使用新版本。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "目前仍是舊版本。請結束 Inspector 並重新打開以使用新版本。"
           }
         }
       }

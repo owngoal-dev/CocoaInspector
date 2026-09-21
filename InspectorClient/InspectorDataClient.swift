@@ -22,6 +22,11 @@ actor InspectorDataClient {
         let ticket: Data?
     }
 
+    // A daemon launchd cannot start (its program is missing, or it dies before
+    // it takes the listener) leaves the message queued with no error, and one
+    // stuck in a sampler holds its reply: either way nothing ever answers.
+    private static let replyTimeout: DispatchTimeInterval = .seconds(30)
+
     private let queue = DispatchQueue(
         label: "wiki.qaq.inspector.client.xpc",
         qos: .userInitiated,
@@ -31,6 +36,7 @@ actor InspectorDataClient {
     private var state: State = .disconnected
     private var generation: UInt64 = 0
     private var requestInFlight = false
+    private var requestSerial: UInt64 = 0
 
     func activate() async throws {
         guard case .disconnected = state else { throw InspectorDataError.alreadyActive }
@@ -149,6 +155,8 @@ actor InspectorDataClient {
         }
 
         requestInFlight = true
+        requestSerial &+= 1
+        let serial = requestSerial
         let requestGeneration = generation
         return try await withCheckedThrowingContinuation { continuation in
             autoreleasepool {
@@ -156,6 +164,9 @@ actor InspectorDataClient {
                 xpc_dictionary_set_uint64(message, InspectorWireKey.version, InspectorProtocol.version)
                 xpc_dictionary_set_uint64(message, InspectorWireKey.operation, operation.rawValue)
                 payload?(message)
+                queue.asyncAfter(deadline: .now() + Self.replyTimeout) { [weak self] in
+                    Task { await self?.expire(serial) }
+                }
                 xpc_connection_send_message_with_reply(connection, message, queue) { object in
                     let result = autoreleasepool { Self.parseReply(object) }
                     Task {
@@ -181,6 +192,13 @@ actor InspectorDataClient {
         }
         requestInFlight = false
         continuation.resume(with: result)
+    }
+
+    // Cancelling hands the pending reply handler an error, so the continuation
+    // still resumes once, through `finish`.
+    private func expire(_ serial: UInt64) {
+        guard requestInFlight, serial == requestSerial, let connection else { return }
+        xpc_connection_cancel(connection)
     }
 
     private func disconnect(generation expected: UInt64) {

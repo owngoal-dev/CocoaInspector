@@ -134,12 +134,19 @@ check:
 	@if (( $${MINIMUM_IOS_MAJOR:-$$(cut -d. -f1 <<<"$(MINIMUM_IOS_VERSION)")} < 16 )); then \
 		hits="$$(grep -rnE 'XPC_(TYPE|ERROR)_[A-Z]|XPC_ARRAY_APPEND' --include='*.swift' "$(ROOT_DIR)" || true)"; \
 		if [[ -n "$$hits" ]]; then \
-			echo "warning: XPC SDK macros named in Swift link libswiftXPC.dylib, which iOS $(MINIMUM_IOS_VERSION) does not have; use InspectorXPC (Shared/InspectorXPC.swift):" >&2; \
-			echo "$$hits" >&2; \
+			echo "error: XPC SDK macros named in Swift link libswiftXPC.dylib, which iOS $(MINIMUM_IOS_VERSION) does not have; use InspectorXPC (Shared/InspectorXPC.swift):" >&2; \
+			echo "$$hits" >&2; exit 65; \
 		fi; \
 	fi
 	@plutil -lint "$(ENTITLEMENTS)"
 	@plutil -lint "$(DAEMON_ENTITLEMENTS)" "$(CLI_ENTITLEMENTS)" "$(LAUNCH_DAEMON)"
+	@for hook in postinst prerm postrm; do \
+		sh -n "$(ROOT_DIR)/Packaging/DEBIAN/$$hook"; \
+		grep -nE '[A-Za-z0-9_@]2>' "$(ROOT_DIR)/Packaging/DEBIAN/$$hook" \
+			&& { echo "error: $$hook has a word glued to a redirect" >&2; exit 65; } || true; \
+		grep -q 'uicache' "$(ROOT_DIR)/Packaging/DEBIAN/$$hook" \
+			&& { echo "error: $$hook must not call uicache; uikittools triggers register the app" >&2; exit 65; } || true; \
+	done
 	@targets="$$(xcodebuild -project "$(PROJECT)" -list)"; \
 	grep -F "CocoaInspectord" <<<"$$targets" >/dev/null; \
 	grep -F "CocoaInspectorCLI" <<<"$$targets" >/dev/null; \

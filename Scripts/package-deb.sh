@@ -45,20 +45,21 @@ iphoneos-arm64:/var/jb | iphoneos-arm64e:) ;;
 *) echo "error: architecture and install prefix name different bootstrap layouts" >&2; exit 64 ;;
 esac
 
-# These native daemons make authorization/path decisions on physical paths.
-# Rewriting their libc imports independently would change that contract.
-native_dependencies="$(otool -L "$daemon_binary")"
-if grep -q 'libvroot' <<<"$native_dependencies"; then
-    echo "error: native daemon uses physical paths; unexpected vroot dependency" >&2
-    exit 65
-fi
-
 app_executable="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app_bundle/Info.plist")"
 bundle_identifier="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app_bundle/Info.plist")"
 [[ "$bundle_identifier" == wiki.qaq.Inspector && -x "$app_bundle/$app_executable" ]] || {
     echo "error: unexpected app identity" >&2
     exit 65
 }
+
+# The daemon and its two peers make authorization/path decisions on physical
+# paths. Rewriting their libc imports independently would change that contract.
+for native in "$app_bundle/$app_executable" "$daemon_binary" "$cli_binary"; do
+    if otool -L "$native" | grep -q 'libvroot'; then
+        echo "error: $(basename "$native") uses physical paths; unexpected vroot dependency" >&2
+        exit 65
+    fi
+done
 
 # The package version comes from Configuration/Version.xcconfig, which is also
 # what the app was built with — refuse to ship a .deb that disagrees.
@@ -167,11 +168,12 @@ sed \
     "$control_template" >"$debian/control"
 
 packaging_root="$(cd "$(dirname "$control_template")/.." && pwd -P)"
-for script in postinst prerm; do
+for script in postinst prerm postrm; do
     sed -e "s|@PREFIX@|$install_prefix|g" "$packaging_root/DEBIAN/$script" >"$debian/$script"
+    sh -n "$debian/$script"
 done
 chmod 0644 "$debian/control"
-chmod 0755 "$debian/postinst" "$debian/prerm"
+chmod 0755 "$debian/postinst" "$debian/prerm" "$debian/postrm"
 
 dpkg-deb --root-owner-group -Zzstd -b "$staging" "$temporary_deb"
 [[ "$(dpkg-deb -f "$temporary_deb" Package)" == "$package_id" ]]

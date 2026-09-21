@@ -63,8 +63,9 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 }
 
-/// An update replaced the running copy (`ExecutableWatch`): old code, against
-/// a daemon the package's postinst has already restarted.
+/// An update or a removal took the running copy's executable
+/// (`ExecutableWatch`); the watch cannot tell which. After an update this is
+/// old code against a daemon the package's postinst has already restarted.
 @MainActor
 final class UpdateNotice {
     static let shared = UpdateNotice()
@@ -92,9 +93,9 @@ final class UpdateNotice {
         }
         isPending = false
         let alert = UIAlertController(
-            title: String(localized: "Inspector Was Updated"),
+            title: String(localized: "Inspector Was Updated or Removed"),
             message: String(
-                localized: "This is still the old version. Quit Inspector and open it again to use the new one."
+                localized: "This copy is no longer installed. Quit it and open Inspector again to continue."
             ),
             preferredStyle: .alert
         )
