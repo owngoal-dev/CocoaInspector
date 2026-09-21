@@ -97,6 +97,11 @@ actor ApplicationIconProvider {
     // IconServices is preferred because it understands compiled asset
     // catalogs. Loose CFBundleIconFiles remain a useful fallback for older and
     // hand-packaged jailbreak apps.
+    //
+    // Loose means a file: a name out of someone else's plist is never handed
+    // to `UIImage(named:in:)`. A catalogue built from an Icon Composer `.icon`
+    // holds names that are image stacks with no bitmap, and iOS 26 answers a
+    // lookup of one with an assertion, not nil (Xrash 0.2.0 crashed so).
     private nonisolated static func bundledIcon(in bundle: Bundle) -> UIImage? {
         let info = bundle.infoDictionary ?? [:]
         var names = info["CFBundleIconFiles"] as? [String] ?? []
@@ -106,13 +111,16 @@ actor ApplicationIconProvider {
                   let files = primary["CFBundleIconFiles"] as? [String] else { continue }
             names.append(contentsOf: files)
         }
+        let files = (try? FileManager.default.contentsOfDirectory(atPath: bundle.bundlePath)) ?? []
+        // Last first: the list names the smallest icon first. Within a name
+        // the longest file is the densest (`@3x` over `@2x` over none).
         for name in names.reversed() {
-            if let image = UIImage(
-                named: name,
-                in: bundle,
-                compatibleWith: nil
-            ) {
-                return image
+            let stem = (name as NSString).deletingPathExtension
+            let matches = files.filter { $0.hasPrefix(stem) && $0.lowercased().hasSuffix(".png") }
+            for file in matches.sorted(by: { $0.count > $1.count }) {
+                if let image = UIImage(contentsOfFile: bundle.bundlePath + "/" + file) {
+                    return image
+                }
             }
         }
         return nil

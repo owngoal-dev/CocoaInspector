@@ -101,7 +101,7 @@ final class UpdateNotice {
         )
         alert.addAction(UIAlertAction(title: String(localized: "Later"), style: .cancel))
         alert.addAction(UIAlertAction(title: String(localized: "Quit Inspector"), style: .default) { _ in
-            exit(0)
+            QuietExit.run()
         })
         presenter.present(alert, animated: true)
     }
