@@ -30,6 +30,13 @@ env:
   HOMEBREW_NO_AUTO_UPDATE: "1"
   HOMEBREW_NO_INSTALL_CLEANUP: "1"
   HOMEBREW_NO_ANALYTICS: "1"
+  # 0.5.8 shipped CFBundleVersion 82, this workflow's run number at the time it
+  # also did the publishing. The counter carries on from there rather than from
+  # Version.xcconfig's 13, so the number never goes backwards: LaunchServices
+  # keeps the record of the higher build and reads the old Info.plist from it,
+  # which is the "plist change that does not take" in the notes. Raise this,
+  # never lower it.
+  BUILD_NUMBER_FLOOR: "100"
 
 jobs:
   build:
@@ -60,12 +67,22 @@ jobs:
             brew install "${formulae[@]}"
           fi
 
-      - name: Apply release version from tag
-        if: startsWith(github.ref, 'refs/tags/v')
+      # The build number is this run's, always: it used to be the run number of
+      # the job that published, and with publishing moved out of here nothing
+      # would set it at all — every release would ship whatever integer the
+      # last `make bump-build` happened to leave in Version.xcconfig. It is
+      # floored past the old counter so it keeps going up; see BUILD_NUMBER_FLOOR.
+      # The version is the commit's, except on a dispatch against a tag, which
+      # is the documented way back when an artifact has aged out.
+      - name: Pin the build number to this run
         shell: bash
         run: |
           set -euo pipefail
-          ./Scripts/apply-version.sh "$GITHUB_REF_NAME" "$GITHUB_RUN_NUMBER"
+          version="$(make --no-print-directory print-version)"
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            version="${GITHUB_REF_NAME#v}"
+          fi
+          ./Scripts/apply-version.sh "$version" "$(( GITHUB_RUN_NUMBER + BUILD_NUMBER_FLOOR ))"
 
       - name: Build Debian packages with Xcode
         run: |
