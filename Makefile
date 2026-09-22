@@ -46,6 +46,7 @@ DEB_PACKAGER        := $(ROOT_DIR)/Scripts/package-deb.sh
 VERSION_APPLIER     := $(ROOT_DIR)/Scripts/apply-version.sh
 DEB_VERIFIER        := $(ROOT_DIR)/Scripts/verify-deb.sh
 ACCESSIBILITY_GATE  := $(ROOT_DIR)/Scripts/check-accessibility.py
+STALE_STRINGS_GATE  := $(ROOT_DIR)/Scripts/check-stale-strings.py
 # Everything the Inspector app target compiles, which is where UIKit views
 # live. The daemon and the CLI have no views, and the harnesses are not shipped.
 APP_SOURCE_ROOTS    := "$(ROOT_DIR)/Inspector" "$(ROOT_DIR)/Shared" "$(ROOT_DIR)/InspectorClient"
@@ -144,6 +145,13 @@ check:
 		fi; \
 	fi
 	@"$(ACCESSIBILITY_GATE)" $(APP_SOURCE_ROOTS)
+	@# Every key here is `manual` on purpose: Xcode cannot extract through the
+	@# iOS 13 `String(localized:)` shim, so nothing is extracted and nothing
+	@# should ever be reaped. A `stale` marker therefore means Xcode wrote one
+	@# during a build, into a file too large to read, and it would ride into a
+	@# commit as one green line. Fix it with Scripts/prune-xcstrings.py.
+	@test -x "$(STALE_STRINGS_GATE)" || { echo "error: check-stale-strings.py is not executable" >&2; exit 66; }
+	@"$(STALE_STRINGS_GATE)" "$(ROOT_DIR)/Inspector"
 	@plutil -lint "$(ENTITLEMENTS)"
 	@plutil -lint "$(DAEMON_ENTITLEMENTS)" "$(CLI_ENTITLEMENTS)" "$(LAUNCH_DAEMON)"
 	@for hook in postinst prerm postrm; do \
