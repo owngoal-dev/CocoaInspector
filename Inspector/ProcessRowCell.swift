@@ -12,6 +12,10 @@ final class ProcessRowCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         accessoryType = .disclosureIndicator
+        // One element for the whole row, labelled in configure(with:). Left to
+        // itself the cell strings the four labels together, so the subtitle's
+        // separators are spoken and the two figures arrive with no unit.
+        isAccessibilityElement = true
 
         nameLabel.font = .preferredFont(forTextStyle: .body)
         subtitleLabel.font = .preferredFont(forTextStyle: .footnote)
@@ -61,13 +65,25 @@ final class ProcessRowCell: UITableViewCell {
     func configure(with row: ProcessRow) {
         iconView.executablePath = row.isApp ? row.record.executablePath : nil
         nameLabel.text = row.displayName
-        subtitleLabel.text = [
+        let details = [
             "PID \(row.record.pid)",
             InspectorFormat.userName(row.record.userID),
             String(localized: "\(Int(row.record.threadCount)) threads"),
-        ].joined(separator: " · ")
-        cpuLabel.text = InspectorFormat.percent(row.cpuFraction)
+        ]
+        subtitleLabel.text = details.joined(separator: " · ")
+        let cpu = InspectorFormat.percent(row.cpuFraction)
+        let memory = InspectorFormat.memoryBytes(row.record.physicalFootprint)
+        cpuLabel.text = cpu
         cpuLabel.textColor = row.cpuFraction > 0.005 ? .label : .secondaryLabel
-        memoryLabel.text = InspectorFormat.memoryBytes(row.record.physicalFootprint)
+        memoryLabel.text = memory
+        // What the row is goes in the label, what it currently measures in the
+        // value, so a live sample re-announces the figures without repeating
+        // the name. The numbers are named because on their own they are two
+        // bare quantities.
+        accessibilityLabel = ([row.displayName] + details).joined(separator: ", ")
+        accessibilityValue = [
+            "\(String(localized: "CPU")) \(cpu)",
+            "\(String(localized: "Memory")) \(memory)",
+        ].joined(separator: ", ")
     }
 }

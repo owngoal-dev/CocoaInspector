@@ -47,7 +47,15 @@ final class InspectorUnavailableView: UIView {
         case .loading(let text):
             let spinner = UIActivityIndicatorView(style: .medium)
             spinner.startAnimating()
-            guard let text else { return [spinner] }
+            guard let text else {
+                // With no text beside it the spinner is the whole screen, so
+                // it has to say so itself; otherwise the table reads as empty.
+                spinner.isAccessibilityElement = true
+                spinner.accessibilityLabel = String(localized: "Loading…")
+                return [spinner]
+            }
+            // The text says what is happening, so the spinner is decoration.
+            spinner.isAccessibilityElement = false
             return [spinner, label(text, style: .subheadline, color: .secondaryLabel)]
         case .message(let symbolName, let title, let description, let actionTitle):
             let titleFont = UIFont.inspector(.title3, weight: .semibold)
@@ -58,8 +66,13 @@ final class InspectorUnavailableView: UIView {
                 )
             )
             symbol.tintColor = .label
+            // The symbol repeats the title in picture form, so it is skipped
+            // and the heading reads as the one thing it looks like.
+            symbol.isAccessibilityElement = false
             let titleLabel = label(title, style: .title3, color: .label)
             titleLabel.font = titleFont
+            // What this screen is about, which lets VoiceOver jump to it.
+            titleLabel.accessibilityTraits.insert(.header)
             let heading = UIStackView(arrangedSubviews: [symbol, titleLabel])
             heading.spacing = 6
             heading.alignment = .center

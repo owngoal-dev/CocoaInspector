@@ -37,6 +37,10 @@ final class InspectorMenuButton: UIButton {
         setSymbol(symbolName)
         // Without one, the system reads the symbol's own name ("More").
         if let accessibilityLabel { self.accessibilityLabel = accessibilityLabel }
+        // A tap opens a menu instead of doing something at once, and a lone
+        // glyph says nothing about that. VoiceOver reads the hint after the
+        // label, so the name still comes first.
+        accessibilityHint = String(localized: "Opens a menu")
         if #available(iOS 14.0, *) {
             showsMenuAsPrimaryAction = true
             isContextMenuInteractionEnabled = true
@@ -114,6 +118,10 @@ final class InspectorMenuButton: UIButton {
         )
         for item in items {
             var label = item.value.map { "\(item.title): \($0)" } ?? item.title
+            // The sheet has nowhere to put a checkmark but the title, and
+            // VoiceOver reads that glyph as a stray character. Say the state
+            // in words instead, the way a checked menu item reads from iOS 14.
+            let checkedLabel = item.isOn ? String(localized: "\(label), selected") : nil
             if item.isOn { label = "✓ \(label)" }
             let action = UIAlertAction(
                 title: label,
@@ -126,6 +134,7 @@ final class InspectorMenuButton: UIButton {
                 }
             }
             action.isEnabled = !item.isDisabled
+            action.accessibilityLabel = checkedLabel
             sheet.addAction(action)
         }
         sheet.addAction(UIAlertAction(title: String(systemLocalized: "Cancel"), style: .cancel))

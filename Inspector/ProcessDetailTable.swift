@@ -371,6 +371,22 @@ final class DetailTableHeaderView: UITableViewHeaderFooterView {
             button.semanticContentAttribute = effectiveUserInterfaceLayoutDirection == .rightToLeft
                 ? .forceLeftToRight
                 : .forceRightToLeft
+            // The title is abbreviated to whatever the column is wide enough
+            // for ("Pri", "FD", "Refs"), so VoiceOver reads the sort order's
+            // full name instead. Voice Control keeps accepting the
+            // abbreviation, which is what is written on screen.
+            button.accessibilityLabel = column.order.label
+            button.accessibilityUserInputLabels = [column.title, column.order.label]
+            // The chevron is the only cue for the current direction, and it is
+            // drawn, not spoken.
+            button.accessibilityValue = isSorted
+                ? (sort.ascending
+                    ? String(localized: "Sorted ascending")
+                    : String(localized: "Sorted descending"))
+                : nil
+            button.accessibilityHint = isSorted
+                ? String(localized: "Reverses the sort order")
+                : String(localized: "Sorts the list by this column")
         }
         setNeedsLayout()
     }
@@ -423,6 +439,22 @@ final class DetailTableCell: UITableViewCell {
         for (index, label) in labels.enumerated() {
             label.text = index < cells.count ? cells[index] : ""
         }
+        applyAccessibility(columns: columns, cells: cells)
+    }
+
+    // The row is one VoiceOver stop rather than one per column: read on its
+    // own a column value says nothing about the column it came from
+    // ("Waiting", "47"), so every value is announced behind its column's name.
+    // The sort order's name is used rather than the header's title, which is
+    // abbreviated to fit the column, and the two are the same words otherwise.
+    private func applyAccessibility(columns: [DetailColumn], cells: [String]) {
+        isAccessibilityElement = true
+        // Only punctuation separates the pairs; both halves arrive translated.
+        accessibilityLabel = zip(columns, cells)
+            .compactMap { column, value -> String? in
+                value.isEmpty ? nil : "\(column.order.label), \(value)"
+            }
+            .joined(separator: ", ")
     }
 
     override func layoutSubviews() {

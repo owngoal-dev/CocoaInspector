@@ -341,7 +341,12 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
             systemName: isPaused ? "pause.fill" : "dot.radiowaves.left.and.right"
         )
         liveUpdatesItem.tintColor = isPaused ? .systemYellow : .systemGreen
-        liveUpdatesItem.accessibilityLabel = String(localized: "Pause Live Updates")
+        // The label names what a tap does next. While paused the button
+        // resumes, so keeping "Pause Live Updates" there reads backwards, and
+        // .selected alone leaves the state to be inferred.
+        liveUpdatesItem.accessibilityLabel = isPaused
+            ? String(localized: "Resume Live Updates")
+            : String(localized: "Pause Live Updates")
         liveUpdatesItem.accessibilityTraits = isPaused ? [.button, .selected] : .button
     }
 
@@ -350,7 +355,8 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
     }
 
     private lazy var actionsButton = InspectorMenuButton(
-        symbolName: "line.3.horizontal.decrease"
+        symbolName: "line.3.horizontal.decrease",
+        accessibilityLabel: String(localized: "Sort and Filter")
     ) { [weak self] in
         InspectorMenu(sections: [self?.actionItems() ?? []])
     }
@@ -457,6 +463,9 @@ private final class ProcessListCreditsView: UIView {
         credit.titleLabel?.font = .preferredFont(forTextStyle: .footnote)
         credit.titleLabel?.adjustsFontForContentSizeCategory = true
         credit.addTarget(self, action: #selector(openWebsite), for: .touchUpInside)
+        // The credit line reads as a signature, not as something that leaves
+        // the app, so the hint says where a tap goes.
+        credit.accessibilityHint = String(localized: "Opens the OwnGoal Studio website")
 
         let version = UILabel()
         version.text = InspectorFormat.appVersion
