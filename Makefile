@@ -45,6 +45,10 @@ XCODEBUILD_WRAPPER  := $(ROOT_DIR)/Scripts/run-xcodebuild.sh
 DEB_PACKAGER        := $(ROOT_DIR)/Scripts/package-deb.sh
 VERSION_APPLIER     := $(ROOT_DIR)/Scripts/apply-version.sh
 DEB_VERIFIER        := $(ROOT_DIR)/Scripts/verify-deb.sh
+ACCESSIBILITY_GATE  := $(ROOT_DIR)/Scripts/check-accessibility.py
+# Everything the Inspector app target compiles, which is where UIKit views
+# live. The daemon and the CLI have no views, and the harnesses are not shipped.
+APP_SOURCE_ROOTS    := "$(ROOT_DIR)/Inspector" "$(ROOT_DIR)/Shared" "$(ROOT_DIR)/InspectorClient"
 CONTROL_TEMPLATE    := $(ROOT_DIR)/Packaging/DEBIAN/control
 ENTITLEMENTS        := $(ROOT_DIR)/Packaging/Inspector.entitlements
 DAEMON_ENTITLEMENTS := $(ROOT_DIR)/Packaging/Inspectord.entitlements
@@ -117,6 +121,7 @@ check:
 	@test -x "$(DEB_PACKAGER)" || { echo "error: package-deb.sh is not executable" >&2; exit 66; }
 	@test -x "$(VERSION_APPLIER)" || { echo "error: apply-version.sh is not executable" >&2; exit 66; }
 	@test -x "$(DEB_VERIFIER)" || { echo "error: verify-deb.sh is not executable" >&2; exit 66; }
+	@test -x "$(ACCESSIBILITY_GATE)" || { echo "error: check-accessibility.py is not executable" >&2; exit 66; }
 	@for xcconfig in Version Base Development Release; do \
 		test -f "$(CONFIG_DIR)/$$xcconfig.xcconfig" || { echo "error: Configuration/$$xcconfig.xcconfig is missing" >&2; exit 66; }; \
 	done
@@ -138,6 +143,7 @@ check:
 			echo "$$hits" >&2; exit 65; \
 		fi; \
 	fi
+	@"$(ACCESSIBILITY_GATE)" $(APP_SOURCE_ROOTS)
 	@plutil -lint "$(ENTITLEMENTS)"
 	@plutil -lint "$(DAEMON_ENTITLEMENTS)" "$(CLI_ENTITLEMENTS)" "$(LAUNCH_DAEMON)"
 	@for hook in postinst prerm postrm; do \
