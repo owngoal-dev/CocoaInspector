@@ -1,19 +1,29 @@
+# Pushes and pull requests: compile, package and verify both flavours, and
+# keep the packages for thirty days. Nothing is published from here: a tag
+# publishes, through `release.yml`, the packages of its commit's run, once
+# that run has passed.
+#
+# A commit that never reached main has no run of its own — dispatch this
+# workflow on the tag (`gh workflow run ci.yml --ref vX.Y.Z`), which is why
+# the tag steps below survive although no tag push starts this any more.
 name: CI
 
 on:
   push:
     branches:
       - main
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
   pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
 
+# A pull request's new push cancels the run of its old one. A push to main
+# keeps its own run however soon the next one follows, since a tag on that
+# commit publishes what that run built, and cancelling it destroys the
+# artifact the tag needs.
 concurrency:
-  group: inspector-${{ github.workflow }}-${{ github.ref }}
+  group: inspector-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: true
 
 env:
@@ -23,12 +33,9 @@ env:
 
 jobs:
   build:
-    name: Build, verify, and release Debian package
+    name: Build and verify Debian packages
     runs-on: macos-26
     timeout-minutes: 60
-
-    permissions:
-      contents: write
 
     steps:
       - name: Configure build paths
@@ -135,52 +142,3 @@ jobs:
             build/Packages/SHA256SUMS
           if-no-files-found: error
           retention-days: 30
-
-      - name: Publish GitHub release
-        if: startsWith(github.ref, 'refs/tags/v')
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-        run: |
-          set -euo pipefail
-          version="${GITHUB_REF_NAME#v}"
-          roothide_deb="$(make --no-print-directory print-deb-path FLAVOR=roothide)"
-          rootless_deb="$(make --no-print-directory print-deb-path FLAVOR=rootless)"
-          test -f build/Packages/SHA256SUMS
-          dsym_zip="build/Packages/Inspector_${version}_dSYMs.zip"
-          test -f "$dsym_zip"
-          notes="$(mktemp "${TMPDIR:-/tmp}/inspector-notes.XXXXXX")"
-          trap 'rm -f "$notes"' EXIT
-          {
-            echo "Inspector $version."
-            echo
-            echo "| Jailbreak | Package |"
-            echo "| --- | --- |"
-          } >"$notes"
-          for deb_path in "$roothide_deb" "$rootless_deb"; do
-            test -f "$deb_path"
-            test "$(dpkg-deb -f "$deb_path" Version)" = "$version"
-          done
-          printf '| roothide | `%s` |\n' "$(basename "$roothide_deb")" >>"$notes"
-          printf '| rootless (/var/jb) | `%s` |\n' "$(basename "$rootless_deb")" >>"$notes"
-          {
-            echo
-            echo '```sh'
-            echo "sudo dpkg -i <package>.deb"
-            echo '```'
-            echo
-            echo "SHA-256 sums are in \`SHA256SUMS\`."
-            echo
-            echo "- Commit: \`$GITHUB_SHA\`"
-          } >>"$notes"
-          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            gh release upload "$GITHUB_REF_NAME" --clobber "$roothide_deb" "$rootless_deb" "$dsym_zip" build/Packages/SHA256SUMS
-            gh release edit "$GITHUB_REF_NAME" --notes-file "$notes"
-          else
-            gh release create "$GITHUB_REF_NAME" \
-              --verify-tag \
-              --title "$GITHUB_REF_NAME" \
-              --notes-file "$notes" \
-              "$roothide_deb" "$rootless_deb" "$dsym_zip" build/Packages/SHA256SUMS
-          fi

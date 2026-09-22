@@ -1,0 +1,120 @@
+# Tag vX.Y.Z → the packages CI built for the tagged commit, published.
+#
+# Nothing is tested or compiled here. The push of the commit to main ran
+# `ci.yml`: both packages compiled, packaged and verified, kept as the
+# artifact `Inspector-<sha>`. The tag publishes that artifact, and only once
+# that run has succeeded. What ships is the file CI verified, not a second
+# build of the same commit.
+#
+# The commit says its version (`make set-version`, the release note, then the
+# tag), and the packages CI built are named for it: when they are not named
+# for the tag, nothing is published.
+#
+# The tag and the branch usually arrive together, so the run may not exist
+# yet when this starts, and it is waited for. A commit that never reached
+# main has no run: dispatch CI on the tag (`gh workflow run ci.yml --ref
+# vX.Y.Z`), which is also the way back once the artifact is past its thirty
+# days, and re-run this.
+
+name: Release
+
+on:
+  push:
+    tags: ["v[0-9]*.[0-9]*.[0-9]*"]
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      # The newest run on the commit that a push or a dispatch started; a pull
+      # request's run names its packages for the merge commit, not this one.
+      - name: Wait for CI on the tagged commit
+        id: ci
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          run=""
+          for _ in $(seq 30); do
+            run="$(gh run list --workflow ci.yml --commit "$GITHUB_SHA" --json databaseId,event \
+              --jq '[.[] | select(.event != "pull_request")][0].databaseId // empty')"
+            [ -n "$run" ] && break
+            sleep 20
+          done
+          if [ -z "$run" ]; then
+            echo "::error::CI has not run on $GITHUB_SHA: dispatch it on $GITHUB_REF_NAME, then re-run this"
+            exit 1
+          fi
+          echo "CI run $run on $GITHUB_SHA"
+          gh run watch "$run" --interval 30 > /dev/null
+          conclusion="$(gh run view "$run" --json conclusion --jq .conclusion)"
+          if [ "$conclusion" != success ]; then
+            echo "::error::CI run $run ended $conclusion: nothing is published"
+            exit 1
+          fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: Inspector-${{ github.sha }}
+          path: build/Packages/
+          run-id: ${{ steps.ci.outputs.run }}
+          github-token: ${{ github.token }}
+
+      # CI's list proves the transfer. The release's own list is written for
+      # exactly the files it carries, named for the tag, and a missing one
+      # fails here.
+      - name: Verify the packages and write the release checksums
+        working-directory: build/Packages
+        run: |
+          set -euo pipefail
+          sha256sum --check SHA256SUMS
+          version="${GITHUB_REF_NAME#v}"
+          sha256sum \
+            "wiki.qaq.inspector_${version}_iphoneos-arm64e.deb" \
+            "wiki.qaq.inspector_${version}_iphoneos-arm64.deb" \
+            "Inspector_${version}_dSYMs.zip" > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          notes="$RUNNER_TEMP/inspector-release.md"
+          if [ -f "Documents/Releases/$version.md" ]; then
+            cp "Documents/Releases/$version.md" "$notes"
+          else
+            cat > "$notes" <<NOTES
+          Inspector $version, for roothide and for rootless (/var/jb) bootstraps.
+
+          SHA-256 sums are in \`SHA256SUMS\`.
+          NOTES
+          fi
+          files=("build/Packages/wiki.qaq.inspector_${version}_iphoneos-arm64e.deb"
+                 "build/Packages/wiki.qaq.inspector_${version}_iphoneos-arm64.deb"
+                 "build/Packages/Inspector_${version}_dSYMs.zip"
+                 "build/Packages/SHA256SUMS")
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" --clobber "${files[@]}"
+            gh release edit "$GITHUB_REF_NAME" --notes-file "$notes"
+          else
+            gh release create "$GITHUB_REF_NAME" --verify-tag \
+              --title "Inspector $version" --notes-file "$notes" "${files[@]}"
+          fi
