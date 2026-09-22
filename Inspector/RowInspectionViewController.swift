@@ -57,6 +57,11 @@ final class RowInspectionViewController: UITableViewController {
         for label in [cell.textLabel, cell.detailTextLabel] {
             label?.adjustsFontForContentSizeCategory = true
         }
+        // Read as one row: the caption names the row and the text under it is
+        // what that row says, rather than two fragments in a row of their own.
+        cell.isAccessibilityElement = true
+        cell.accessibilityLabel = field.label
+        cell.accessibilityValue = field.value
         return cell
     }
 

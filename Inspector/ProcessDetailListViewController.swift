@@ -119,6 +119,8 @@ final class ProcessDetailListViewController: UITableViewController, UISearchResu
             if let self, let row = self.rowsByID[id] {
                 (cell as? DetailTableCell)?.configure(columns: self.columns, cells: row.cells)
             }
+            // Nothing on a row says that it opens onto the whole record.
+            cell.accessibilityHint = String(localized: "Shows the full record")
             return cell
         }
         render()
@@ -337,7 +339,10 @@ final class ProcessDetailListViewController: UITableViewController, UISearchResu
 
     // MARK: Sharing
 
-    private lazy var shareButton = InspectorMenuButton(symbolName: "ellipsis") { [weak self] in
+    private lazy var shareButton = InspectorMenuButton(
+        symbolName: "ellipsis",
+        accessibilityLabel: String(localized: "More Options")
+    ) { [weak self] in
         InspectorMenu(sections: [[
             InspectorMenuItem(
                 title: String(localized: "Share"),

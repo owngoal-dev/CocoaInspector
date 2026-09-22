@@ -286,15 +286,31 @@ final class ProcessDetailViewController: UITableViewController {
             cell.detailTextLabel?.text = value
             cell.detailTextLabel?.textColor = .secondaryLabel
             cell.detailTextLabel?.lineBreakMode = .byTruncatingMiddle
+            // Left untouched the two labels are read as separate fragments;
+            // naming the row and handing the reading over as the row's value
+            // makes it one announcement that says what the number is for.
+            cell.isAccessibilityElement = true
+            cell.accessibilityLabel = label
+            cell.accessibilityValue = value
+            // Touch and hold copies the row, and nothing on screen says so.
+            cell.accessibilityHint = String(localized: "Touch and hold to copy")
         case .link(let title, _):
             cell.textLabel?.text = title
             cell.accessoryType = .disclosureIndicator
+            // The disclosure indicator is the only thing saying this row goes
+            // somewhere, and it is purely visual.
+            cell.isAccessibilityElement = true
+            cell.accessibilityLabel = title
+            cell.accessibilityTraits = .button
         case .text(let text):
             cell.selectionStyle = .none
             cell.textLabel?.text = text
             cell.textLabel?.numberOfLines = 0
             cell.textLabel?.font = .inspector(.footnote, design: .monospaced)
             cell.textLabel?.adjustsFontForContentSizeCategory = true
+            cell.isAccessibilityElement = true
+            cell.accessibilityLabel = text
+            cell.accessibilityHint = String(localized: "Touch and hold to copy")
         }
     }
 
@@ -350,7 +366,8 @@ final class ProcessDetailViewController: UITableViewController {
     // MARK: Options
 
     private lazy var optionsButton = InspectorMenuButton(
-        symbolName: "ellipsis"
+        symbolName: "ellipsis",
+        accessibilityLabel: String(localized: "More Options")
     ) { [weak self] in
         InspectorMenu(sections: self?.optionSections() ?? [])
     }
@@ -361,6 +378,12 @@ final class ProcessDetailViewController: UITableViewController {
         if isExporting {
             let spinner = UIActivityIndicatorView(style: .medium)
             spinner.startAnimating()
+            // The spinner takes the only control in the bar with it, and a
+            // spinner is not an accessibility element on its own, so without
+            // this VoiceOver finds nothing there and never says the export
+            // is under way.
+            spinner.isAccessibilityElement = true
+            spinner.accessibilityLabel = String(localized: "Exporting…")
             navigationItem.rightBarButtonItem = UIBarButtonItem(customView: spinner)
         } else {
             navigationItem.rightBarButtonItem = UIBarButtonItem(customView: optionsButton)
