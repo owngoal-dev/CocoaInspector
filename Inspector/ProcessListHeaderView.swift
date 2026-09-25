@@ -1,8 +1,8 @@
 import UIKit
 
-// Above the rows: what the list holds ("120 processes · Paused"), then a
-// heading over each column. A heading sorts the list by its column, and the
-// one it is sorted by is tinted and carries an arrow, as in a detail table.
+// Above the rows, a heading over each column. A heading sorts the list by
+// its column, and the one it is sorted by is tinted and carries an arrow, as
+// in a detail table. What the list holds is the navigation bar's subtitle.
 final class ProcessListHeaderView: UITableViewHeaderFooterView {
     static let reuseIdentifier = "header"
 
@@ -11,26 +11,18 @@ final class ProcessListHeaderView: UITableViewHeaderFooterView {
         set { headings.sort = newValue }
     }
 
-    private let summaryLabel = UILabel()
     private let headings = ProcessColumnHeadingsView()
 
     override init(reuseIdentifier: String?) {
         super.init(reuseIdentifier: reuseIdentifier)
-        summaryLabel.textColor = .secondaryLabel
-        summaryLabel.numberOfLines = 0
-        summaryLabel.accessibilityTraits = .header
-
-        let stack = UIStackView(arrangedSubviews: [summaryLabel, headings])
-        stack.axis = .vertical
-        stack.spacing = 2
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(stack)
+        headings.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(headings)
         let margins = contentView.layoutMarginsGuide
         NSLayoutConstraint.activate([
-            stack.leadingAnchor.constraint(equalTo: margins.leadingAnchor),
-            stack.trailingAnchor.constraint(equalTo: margins.trailingAnchor),
-            stack.topAnchor.constraint(equalTo: margins.topAnchor),
-            stack.bottomAnchor.constraint(equalTo: margins.bottomAnchor),
+            headings.leadingAnchor.constraint(equalTo: margins.leadingAnchor),
+            headings.trailingAnchor.constraint(equalTo: margins.trailingAnchor),
+            headings.topAnchor.constraint(equalTo: margins.topAnchor),
+            headings.bottomAnchor.constraint(equalTo: margins.bottomAnchor),
         ])
     }
 
@@ -39,13 +31,7 @@ final class ProcessListHeaderView: UITableViewHeaderFooterView {
         fatalError("init(coder:) is not supported")
     }
 
-    func configure(summary: String, sortOrder: ProcessSortOrder, metrics: ProcessListMetrics) {
-        summaryLabel.text = summary
-        summaryLabel.font = metrics.summaryFont
-        // Stacked rows have no columns to head; the menu still sorts them.
-        if headings.isHidden != metrics.isStacked {
-            headings.isHidden = metrics.isStacked
-        }
+    func configure(sortOrder: ProcessSortOrder, metrics: ProcessListMetrics) {
         headings.configure(sortOrder: sortOrder, metrics: metrics)
     }
 

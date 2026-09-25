@@ -49,6 +49,11 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
         super.viewDidLoad()
         title = String(localized: "Inspector")
         navigationItem.largeTitleDisplayMode = .never
+        // Before iOS 26 a bar has no subtitle of its own; a two-line title
+        // view stands in for one.
+        if #unavailable(iOS 26.0) {
+            navigationItem.titleView = titleView
+        }
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: statsButton)
         // The first item sits at the edge: the live-updates toggle, with the
         // sort and filter menu beside it.
@@ -196,6 +201,7 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
         if let header = tableView.headerView(forSection: 0) as? ProcessListHeaderView {
             configure(header)
         }
+        renderSubtitle()
         statsButton.isEnabled = !model.rows.isEmpty
         renderLiveUpdatesItem()
         // A plain table ruled the empty space below the last row with
@@ -257,9 +263,23 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
         }
     }
 
+    // What the list holds, under the title: "120 processes · Paused". Blank
+    // until the first sample, which would only have said "0 processes".
+    private func renderSubtitle() {
+        let subtitle = model.rows.isEmpty ? nil : processSummary(visibleCount: model.visibleRows.count)
+        if #available(iOS 26.0, *) {
+            guard navigationItem.subtitle != subtitle else { return }
+            navigationItem.subtitle = subtitle
+        } else {
+            titleView.subtitle = subtitle
+        }
+    }
+
+    private lazy var titleView = NavigationTitleView(title: title ?? "")
+
     // Each fragment is translated on its own, then joined — a single key with
     // every optional clause baked in would be untranslatable.
-    private func processHeader(visibleCount: Int) -> String {
+    private func processSummary(visibleCount: Int) -> String {
         let total = model.rows.count
         var parts = [
             visibleCount == total
@@ -277,8 +297,8 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
 
     // MARK: Table view
 
-    // A header view of its own rather than titleForHeaderInSection, which
-    // uppercases the text on older systems and has no room for headings.
+    // The column headings, pinned over the rows. Stacked rows have no
+    // columns to head, so there the header goes; the menu still sorts.
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let identifier = ProcessListHeaderView.reuseIdentifier
         let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: identifier)
@@ -289,7 +309,7 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
     }
 
     override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        UITableView.automaticDimension
+        metrics.isStacked ? .leastNonzeroMagnitude : UITableView.automaticDimension
     }
 
     // Every row is one height for a given text size, so the table never
@@ -299,11 +319,8 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
     }
 
     private func configure(_ header: ProcessListHeaderView) {
-        header.configure(
-            summary: processHeader(visibleCount: model.visibleRows.count),
-            sortOrder: model.sortOrder,
-            metrics: metrics
-        )
+        header.configure(sortOrder: model.sortOrder, metrics: metrics)
+        header.isHidden = metrics.isStacked
         if let columnInsets {
             header.alignColumns(to: columnInsets, in: tableView)
         }
@@ -540,6 +557,57 @@ extension UIViewController {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: String(localized: "OK"), style: .cancel))
         present(alert, animated: true)
+    }
+}
+
+// The title with a subtitle line under it, as iOS 26 draws a navigation
+// item's subtitle, for the systems before it. Read as one heading.
+private final class NavigationTitleView: UIView {
+    private let titleLabel = UILabel()
+    private let subtitleLabel = UILabel()
+
+    var subtitle: String? {
+        get { subtitleLabel.text }
+        set {
+            guard newValue != subtitleLabel.text else { return }
+            subtitleLabel.text = newValue
+            subtitleLabel.isHidden = newValue == nil
+            accessibilityLabel = [titleLabel.text, newValue].compactMap { $0 }.joined(separator: ", ")
+        }
+    }
+
+    init(title: String) {
+        super.init(frame: .zero)
+        titleLabel.text = title
+        titleLabel.font = .systemFont(ofSize: 17, weight: .semibold)
+        titleLabel.textColor = .label
+        subtitleLabel.font = .systemFont(ofSize: 12)
+        subtitleLabel.textColor = .secondaryLabel
+        subtitleLabel.isHidden = true
+        for label in [titleLabel, subtitleLabel] {
+            label.textAlignment = .center
+            label.lineBreakMode = .byTruncatingTail
+        }
+        isAccessibilityElement = true
+        accessibilityTraits = .header
+        accessibilityLabel = title
+
+        let stack = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.leadingAnchor.constraint(equalTo: leadingAnchor),
+            stack.trailingAnchor.constraint(equalTo: trailingAnchor),
+            stack.centerYAnchor.constraint(equalTo: centerYAnchor),
+            stack.topAnchor.constraint(greaterThanOrEqualTo: topAnchor),
+        ])
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) is not supported")
     }
 }
 
