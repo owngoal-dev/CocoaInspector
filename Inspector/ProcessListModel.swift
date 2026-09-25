@@ -15,6 +15,7 @@ struct ProcessRow: Identifiable, Equatable {
 enum ProcessSortOrder: String, CaseIterable, Identifiable {
     case cpu = "CPU"
     case memory = "Memory"
+    case threads = "Threads"
     case pid = "PID"
     case name = "Name"
 
@@ -26,6 +27,7 @@ enum ProcessSortOrder: String, CaseIterable, Identifiable {
         switch self {
         case .cpu: String(localized: "CPU Usage")
         case .memory: String(localized: "Memory Used")
+        case .threads: String(localized: "Threads")
         case .pid: String(localized: "PID")
         case .name: String(localized: "Name")
         }
@@ -57,6 +59,11 @@ enum ProcessSortOrder: String, CaseIterable, Identifiable {
             case .orderedDescending: return false
             case .orderedSame: return lhs.record.pid < rhs.record.pid
             }
+        case .threads:
+            if lhs.record.threadCount != rhs.record.threadCount {
+                return lhs.record.threadCount > rhs.record.threadCount
+            }
+            return lhs.record.pid < rhs.record.pid
         }
     }
 }

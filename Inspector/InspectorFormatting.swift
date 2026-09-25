@@ -5,6 +5,33 @@ enum InspectorFormat {
         ByteCountFormatter.string(fromByteCount: Int64(clamping: value), countStyle: .memory)
     }
 
+    // The process list's memory column. ByteCountFormatter keeps a unit until
+    // the next one is a whole step away, so 1,000 MB to 1,023.9 MB come out
+    // four digits wide; the column is sized for three, so those move up a
+    // unit and read 0.98 GB.
+    static func memoryColumn(_ value: UInt64) -> String {
+        let kibibyte: UInt64 = 1 << 10
+        let mebibyte = kibibyte << 10
+        let gibibyte = mebibyte << 10
+        if value >= 1000 * mebibyte, value < gibibyte {
+            return gigabyteFormatter.string(fromByteCount: Int64(value))
+        }
+        if value >= 1000 * kibibyte, value < mebibyte {
+            return megabyteFormatter.string(fromByteCount: Int64(value))
+        }
+        return memoryBytes(value)
+    }
+
+    private static let gigabyteFormatter = memoryFormatter(unit: .useGB)
+    private static let megabyteFormatter = memoryFormatter(unit: .useMB)
+
+    private static func memoryFormatter(unit: ByteCountFormatter.Units) -> ByteCountFormatter {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .memory
+        formatter.allowedUnits = unit
+        return formatter
+    }
+
     static func dataBytes(_ value: UInt64) -> String {
         ByteCountFormatter.string(fromByteCount: Int64(clamping: value), countStyle: .file)
     }

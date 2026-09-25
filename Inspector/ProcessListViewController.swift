@@ -23,6 +23,14 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
     // A connection that comes up quickly shows a blank list, not a flash of
     // "Connecting…"; one that takes a while shows it long enough to be read.
     private let connectingIndicator = DelayedLoadingIndicator()
+    // Fonts and column widths for the current text size, shared by every row
+    // and the headings so the columns line up.
+    private lazy var metrics = ProcessListMetrics.metrics(
+        for: traitCollection.preferredContentSizeCategory
+    )
+    // Where a row's content starts and ends, as distances from the table's
+    // sides, taken from a laid-out row for the headings to follow.
+    private var columnInsets: UIEdgeInsets?
 
     init(model: ProcessListModel) {
         self.model = model
@@ -55,13 +63,17 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
 
         clearsSelectionOnViewWillAppear = false
         tableView.register(ProcessRowCell.self, forCellReuseIdentifier: ProcessRowCell.reuseIdentifier)
+        tableView.estimatedRowHeight = metrics.rowHeight
         dataSource = ProcessListDataSource(tableView: tableView) { [weak self] tableView, indexPath, identity in
             let cell = tableView.dequeueReusableCell(
                 withIdentifier: ProcessRowCell.reuseIdentifier,
                 for: indexPath
             )
-            if let row = self?.model.row(for: identity) {
-                (cell as? ProcessRowCell)?.configure(with: row)
+            if let self, let cell = cell as? ProcessRowCell {
+                cell.didLayout = { [weak self] in self?.alignColumnHeadings(with: $0) }
+                if let row = model.row(for: identity) {
+                    cell.configure(with: row, metrics: metrics)
+                }
             }
             return cell
         }
@@ -171,11 +183,10 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
             guard let indexPath = tableView.indexPath(for: cell),
                   let identity = dataSource.itemIdentifier(for: indexPath),
                   let row = model.row(for: identity) else { continue }
-            cell.configure(with: row)
+            cell.configure(with: row, metrics: metrics)
         }
-        if let header = tableView.headerView(forSection: 0) {
-            header.textLabel?.text = processHeader(visibleCount: rows.count)
-            header.setNeedsLayout()
+        if let header = tableView.headerView(forSection: 0) as? ProcessListHeaderView {
+            configure(header)
         }
         statsButton.isEnabled = !model.rows.isEmpty
         renderLiveUpdatesItem()
@@ -256,26 +267,70 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
 
     // MARK: Table view
 
+    // A header view of its own rather than titleForHeaderInSection, which
+    // uppercases the text on older systems and has no room for headings.
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let identifier = "header"
-        return tableView.dequeueReusableHeaderFooterView(withIdentifier: identifier)
-            ?? UITableViewHeaderFooterView(reuseIdentifier: identifier)
-    }
-
-    // Set here rather than through titleForHeaderInSection, which uppercases
-    // the text on older systems — once, so later live updates wouldn't match.
-    override func tableView(
-        _ tableView: UITableView,
-        willDisplayHeaderView view: UIView,
-        forSection section: Int
-    ) {
-        (view as? UITableViewHeaderFooterView)?.textLabel?.text = processHeader(
-            visibleCount: model.visibleRows.count
-        )
+        let identifier = ProcessListHeaderView.reuseIdentifier
+        let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: identifier)
+            as? ProcessListHeaderView ?? ProcessListHeaderView(reuseIdentifier: identifier)
+        header.sort = { [weak self] order in self?.model.sortOrder = order }
+        configure(header)
+        return header
     }
 
     override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         UITableView.automaticDimension
+    }
+
+    // Every row is one height for a given text size, so the table never
+    // measures a row, however many there are.
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        metrics.rowHeight
+    }
+
+    private func configure(_ header: ProcessListHeaderView) {
+        header.configure(
+            summary: processHeader(visibleCount: model.visibleRows.count),
+            sortOrder: model.sortOrder,
+            metrics: metrics
+        )
+        if let columnInsets {
+            header.alignColumns(to: columnInsets, in: tableView)
+        }
+    }
+
+    // The headings take their positions from a row that has just laid out,
+    // wherever the table put the header. A row mid-swipe is out of place, so
+    // it doesn't count.
+    private func alignColumnHeadings(with cell: ProcessRowCell) {
+        guard !tableView.isEditing, cell.window != nil else { return }
+        let content = cell.contentView.convert(cell.columnsRect, to: tableView)
+        let insets = UIEdgeInsets(
+            top: 0,
+            left: content.minX - tableView.bounds.minX,
+            bottom: 0,
+            right: tableView.bounds.maxX - content.maxX
+        )
+        guard insets != columnInsets else { return }
+        columnInsets = insets
+        (tableView.headerView(forSection: 0) as? ProcessListHeaderView)?
+            .alignColumns(to: insets, in: tableView)
+    }
+
+    // A new text size brings new fonts and column widths, and a new height
+    // for every row.
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        guard isViewLoaded else { return }
+        let category = traitCollection.preferredContentSizeCategory
+        guard category != previousTraitCollection?.preferredContentSizeCategory else { return }
+        let metrics = ProcessListMetrics.metrics(for: category)
+        guard metrics !== self.metrics else { return }
+        self.metrics = metrics
+        tableView.estimatedRowHeight = metrics.rowHeight
+        render()
+        tableView.beginUpdates()
+        tableView.endUpdates()
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
