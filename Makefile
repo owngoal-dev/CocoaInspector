@@ -175,6 +175,10 @@ harness:
 	trap 'rm -f "$$harness_bin"' EXIT; \
 	xcrun --sdk macosx swiftc -swift-version 5 "$(ROOT_DIR)/Inspector/SceneRestorationReset.swift" "$(ROOT_DIR)/Tests/SceneRestorationHarness.swift" -o "$$harness_bin"; \
 	"$$harness_bin"
+	@harness_bin="$$(mktemp /tmp/inspector-loading-harness.XXXXXX)"; \
+	trap 'rm -f "$$harness_bin"' EXIT; \
+	xcrun --sdk macosx swiftc -swift-version 5 "$(ROOT_DIR)/Inspector/DelayedLoadingIndicator.swift" "$(ROOT_DIR)/Tests/DelayedLoadingHarness.swift" -o "$$harness_bin"; \
+	"$$harness_bin"
 
 build: check harness bump-build
 	XCBUILD_LABEL=build-ios $(XCODEBUILD) \
