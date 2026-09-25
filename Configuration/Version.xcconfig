@@ -2,5 +2,5 @@
 // Update with `make set-version VERSION=1.2.3` in the commit you then tag: the
 // tag publishes the packages CI already built, which are named from here.
 
-MARKETING_VERSION = 0.5.9
+MARKETING_VERSION = 0.6.0
 CURRENT_PROJECT_VERSION = 13
