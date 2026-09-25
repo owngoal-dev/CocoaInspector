@@ -327,27 +327,36 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
     }
 
     // Green while samples keep arriving, yellow while they are paused: the
-    // button shows the state, and a tap flips it.
-    private lazy var liveUpdatesItem = UIBarButtonItem(
-        image: nil,
-        style: .plain,
-        target: self,
-        action: #selector(toggleLiveUpdates)
-    )
+    // button shows the state, and a tap flips it. The two glyphs differ in
+    // width, and a bar item sized to its image grew and shrank with every
+    // flip, shoving the menu beside it. A custom view with a fixed width, the
+    // same as the menu buttons', keeps the glyph centred in a slot that never
+    // moves.
+    private lazy var liveUpdatesButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.frame = CGRect(x: 0, y: 0, width: 36, height: 36)
+        button.widthAnchor.constraint(equalToConstant: 36).isActive = true
+        button.addTarget(self, action: #selector(toggleLiveUpdates), for: .touchUpInside)
+        return button
+    }()
+
+    private lazy var liveUpdatesItem = UIBarButtonItem(customView: liveUpdatesButton)
 
     private func renderLiveUpdatesItem() {
         let isPaused = model.isPaused
-        liveUpdatesItem.image = UIImage(
-            systemName: isPaused ? "pause.fill" : "dot.radiowaves.left.and.right"
+        liveUpdatesButton.setImage(
+            UIImage(systemName: isPaused ? "pause.fill" : "dot.radiowaves.left.and.right"),
+            for: .normal
         )
-        liveUpdatesItem.tintColor = isPaused ? .systemYellow : .systemGreen
+        liveUpdatesButton.tintColor = isPaused ? .systemYellow : .systemGreen
         // The label names what a tap does next. While paused the button
         // resumes, so keeping "Pause Live Updates" there reads backwards, and
-        // .selected alone leaves the state to be inferred.
-        liveUpdatesItem.accessibilityLabel = isPaused
+        // .selected alone leaves the state to be inferred. A custom view is
+        // what VoiceOver reads, so the label and traits go on the button.
+        liveUpdatesButton.accessibilityLabel = isPaused
             ? String(localized: "Resume Live Updates")
             : String(localized: "Pause Live Updates")
-        liveUpdatesItem.accessibilityTraits = isPaused ? [.button, .selected] : .button
+        liveUpdatesButton.accessibilityTraits = isPaused ? [.button, .selected] : .button
     }
 
     @objc private func toggleLiveUpdates() {
