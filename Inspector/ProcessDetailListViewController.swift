@@ -16,6 +16,9 @@ final class ProcessDetailListViewController: UITableViewController, UISearchResu
     private var rowsByID: [String: (cells: [String], inspection: DetailRowInspection)] = [:]
     private var dataSource: UITableViewDiffableDataSource<Int, String>!
     private var failure: String?
+    // Details that come back quickly show a blank screen, not a flash of a
+    // spinner; details that take a while show one long enough to be read.
+    private let loadingIndicator = DelayedLoadingIndicator()
     private var searchText = ""
     private var sort: ProcessDetailSort {
         didSet {
@@ -123,6 +126,9 @@ final class ProcessDetailListViewController: UITableViewController, UISearchResu
             cell.accessibilityHint = String(localized: "Shows the full record")
             return cell
         }
+        loadingIndicator.onChange = { [weak self] in
+            self?.render()
+        }
         render()
         Task { await load() }
     }
@@ -137,6 +143,10 @@ final class ProcessDetailListViewController: UITableViewController, UISearchResu
     // MARK: Rendering
 
     private func render() {
+        // Rows that arrive just after the spinner appeared wait out its
+        // minimum time rather than blinking it away; a message never waits.
+        if loadingIndicator.holdsContent, !rows.isEmpty { return }
+        let showsLoading = loadingIndicator.update(isLoading: failure == nil && detail == nil)
         shareButton.isEnabled = detail != nil
         // An overlay owns the whole screen, so nothing is listed under one.
         var snapshot = NSDiffableDataSourceSnapshot<Int, String>()
@@ -189,7 +199,7 @@ final class ProcessDetailListViewController: UITableViewController, UISearchResu
                 tableView.setUnavailableContent(nil)
             }
         } else {
-            tableView.setUnavailableContent(.loading(nil))
+            tableView.setUnavailableContent(showsLoading ? .loading(nil) : nil)
         }
     }
 

@@ -20,6 +20,9 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
     // across the reloads a live sample causes.
     private var selectedIdentity: ProcessIdentity?
     private let creditsView = ProcessListCreditsView()
+    // A connection that comes up quickly shows a blank list, not a flash of
+    // "Connecting…"; one that takes a while shows it long enough to be read.
+    private let connectingIndicator = DelayedLoadingIndicator()
 
     init(model: ProcessListModel) {
         self.model = model
@@ -64,6 +67,9 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
         }
 
         observation = model.changes.sink { [weak self] in
+            self?.render()
+        }
+        connectingIndicator.onChange = { [weak self] in
             self?.render()
         }
         render()
@@ -128,6 +134,9 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
     // MARK: Rendering
 
     private func render() {
+        // Rows that arrive just after "Connecting…" appeared wait out its
+        // minimum time rather than blinking it away; a message never waits.
+        if connectingIndicator.holdsContent, !model.visibleRows.isEmpty { return }
         let rows = model.visibleRows
         let identities = rows.map(\.id)
         if identities != shownIdentities {
@@ -166,10 +175,14 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
     }
 
     private func renderOverlay() {
+        // Until the first sample lands there is nothing to list, connected or
+        // not; the indicator decides whether that is worth saying yet.
+        let isConnecting = model.rows.isEmpty && (model.phase == .connecting || model.phase == .active)
+        let showsConnecting = connectingIndicator.update(isLoading: isConnecting)
         switch model.phase {
-        case .connecting where model.rows.isEmpty:
+        case .connecting where model.rows.isEmpty, .active where model.rows.isEmpty:
             tableView.setUnavailableContent(
-                .loading(String(localized: "Connecting to the inspector service…"))
+                showsConnecting ? .loading(String(localized: "Connecting to the inspector service…")) : nil
             )
         case .failed(let message):
             tableView.setUnavailableContent(

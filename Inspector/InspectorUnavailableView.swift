@@ -116,6 +116,13 @@ extension UITableView {
         action: @escaping () -> Void = {}
     ) {
         if (backgroundView as? InspectorUnavailableView)?.content == content { return }
-        backgroundView = content.map { InspectorUnavailableView($0, action: action) }
+        let view = content.map { InspectorUnavailableView($0, action: action) }
+        backgroundView = view
+        // A loading state that turns up on a screen already showing (see
+        // DelayedLoadingIndicator) changes nothing VoiceOver was told about,
+        // so it is pointed out; one there from the start is read with the rest.
+        if case .loading = content, window != nil {
+            UIAccessibility.post(notification: .layoutChanged, argument: view)
+        }
     }
 }
