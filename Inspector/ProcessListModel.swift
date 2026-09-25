@@ -93,6 +93,25 @@ enum ProcessScopeFilter: String, CaseIterable, Identifiable {
     }
 }
 
+// Every sample walks the whole process table in the daemon and redraws the
+// list here. The default of five seconds keeps both quiet enough to leave
+// running; the shorter paces are for watching something change. CPU use is
+// measured over the time that actually passed between two samples, so every
+// pace reads correctly.
+enum ProcessRefreshInterval: Int, CaseIterable, Identifiable {
+    case oneSecond = 1
+    case twoSeconds = 2
+    case fiveSeconds = 5
+    case tenSeconds = 10
+
+    var id: Self { self }
+
+    // rawValue, in whole seconds, is what the preference stores.
+    var seconds: TimeInterval { TimeInterval(rawValue) }
+
+    var label: String { String(localized: "\(rawValue) seconds") }
+}
+
 // Everything derived from a sample is computed off the main actor (in the
 // serial operation chain) so the main thread only assigns stored properties.
 struct PreparedSample: Sendable {
@@ -155,17 +174,16 @@ final class ProcessListModel {
         var machTimebaseDenominator: UInt32 = 1
         var sortOrder: ProcessSortOrder
         var scopeFilter: ProcessScopeFilter
+        var refreshInterval: ProcessRefreshInterval
         var searchText = ""
         var isPaused = false
     }
 
-    // Every sample walks the whole process table in the daemon and redraws
-    // the list here. Five seconds keeps both quiet enough to leave running.
-    private static let sampleInterval: TimeInterval = 5
     private static let firstSampleDelay: TimeInterval = 1
 
     private static let sortOrderKey = "processList.sortOrder"
     private static let scopeFilterKey = "processList.scopeFilter"
+    private static let refreshIntervalKey = "processList.refreshInterval"
 
     private var viewState: ViewState {
         didSet { changes.send() }
@@ -205,6 +223,17 @@ final class ProcessListModel {
             rebuildVisibleRows { $0.scopeFilter = newValue }
         }
     }
+    // A new pace ends the wait under way, so the next sample comes at once
+    // and the new pace counts from there instead of from the old deadline.
+    var refreshInterval: ProcessRefreshInterval {
+        get { viewState.refreshInterval }
+        set {
+            guard newValue != viewState.refreshInterval else { return }
+            defaults.set(newValue.rawValue, forKey: Self.refreshIntervalKey)
+            viewState.refreshInterval = newValue
+            pendingWait?.finish()
+        }
+    }
     var searchText: String {
         get { viewState.searchText }
         set {
@@ -232,6 +261,7 @@ final class ProcessListModel {
     private let session = ProcessDataSession()
     private var shouldRun = false
     private var samplingTask: Task<Void, Never>?
+    private var pendingWait: SampleWait?
     private var operationChain: Task<Void, Never> = Task {}
 
     init(defaults: UserDefaults = .standard) {
@@ -240,7 +270,15 @@ final class ProcessListModel {
             .flatMap(ProcessSortOrder.init(rawValue:)) ?? .cpu
         let scopeFilter = defaults.string(forKey: Self.scopeFilterKey)
             .flatMap(ProcessScopeFilter.init(rawValue:)) ?? .all
-        viewState = ViewState(sortOrder: sortOrder, scopeFilter: scopeFilter)
+        // A missing preference reads as 0, which is no interval.
+        let refreshInterval = ProcessRefreshInterval(
+            rawValue: defaults.integer(forKey: Self.refreshIntervalKey)
+        ) ?? .fiveSeconds
+        viewState = ViewState(
+            sortOrder: sortOrder,
+            scopeFilter: scopeFilter,
+            refreshInterval: refreshInterval
+        )
     }
 
     func row(for identity: ProcessIdentity) -> ProcessRow? {
@@ -332,7 +370,7 @@ final class ProcessListModel {
                 // CPU use is the growth between two samples, so the first
                 // one has none to show; the second follows quickly to fill
                 // it in, and the steady pace starts from there.
-                await wait(seconds: isFirstSample ? Self.firstSampleDelay : Self.sampleInterval)
+                await wait(seconds: isFirstSample ? Self.firstSampleDelay : refreshInterval.seconds)
                 isFirstSample = false
             }
         } catch {
@@ -353,9 +391,11 @@ final class ProcessListModel {
     // gesture. A default-mode timer is deferred during UI tracking and resumes
     // sampling after scrolling yields the RunLoop back to normal UI work.
     // Cancelling ends the wait at once, so pausing and resuming doesn't sit
-    // out the rest of a five-second gap.
+    // out the rest of the gap.
     private func wait(seconds: TimeInterval) async {
         let wait = SampleWait()
+        pendingWait = wait
+        defer { if pendingWait === wait { pendingWait = nil } }
         await withTaskCancellationHandler {
             await withCheckedContinuation { wait.start(seconds: seconds, continuation: $0) }
         } onCancel: {
