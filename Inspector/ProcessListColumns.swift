@@ -41,7 +41,6 @@ final class ProcessListMetrics {
     let nameFont: UIFont
     let valueFont: UIFont
     let titleFont: UIFont
-    let summaryFont: UIFont
     let iconSize: CGFloat
     let iconSpacing: CGFloat
     let columnSpacing: CGFloat
@@ -69,7 +68,6 @@ final class ProcessListMetrics {
         nameFont = .preferredFont(forTextStyle: isStacked ? .body : .subheadline, compatibleWith: traits)
         valueFont = .inspector(.footnote, design: .monospacedDigit, compatibleWith: traits)
         titleFont = .inspector(.caption1, weight: .semibold, compatibleWith: traits)
-        summaryFont = .preferredFont(forTextStyle: .footnote, compatibleWith: traits)
         iconSize = isStacked ? 36 : 28
         iconSpacing = 10
         columnSpacing = (valueFont.pointSize * 0.75).rounded()

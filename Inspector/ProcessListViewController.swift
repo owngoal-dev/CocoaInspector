@@ -34,7 +34,10 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
 
     init(model: ProcessListModel) {
         self.model = model
-        super.init(style: .insetGrouped)
+        // A plain table runs the rows from edge to edge, and its section
+        // header stays pinned while they scroll, so the column headings stay
+        // in sight over whatever is below them.
+        super.init(style: .plain)
     }
 
     @available(*, unavailable)
@@ -46,6 +49,11 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
         super.viewDidLoad()
         title = String(localized: "Inspector")
         navigationItem.largeTitleDisplayMode = .never
+        // Before iOS 26 a bar has no subtitle of its own; a two-line title
+        // view stands in for one.
+        if #unavailable(iOS 26.0) {
+            navigationItem.titleView = titleView
+        }
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: statsButton)
         // The first item sits at the edge: the live-updates toggle, with the
         // sort and filter menu beside it.
@@ -64,6 +72,11 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
         clearsSelectionOnViewWillAppear = false
         tableView.register(ProcessRowCell.self, forCellReuseIdentifier: ProcessRowCell.reuseIdentifier)
         tableView.estimatedRowHeight = metrics.rowHeight
+        // From iOS 15 a plain table pads above every section header; the
+        // headings sit straight under the search bar instead.
+        if #available(iOS 15.0, *) {
+            tableView.sectionHeaderTopPadding = 0
+        }
         dataSource = ProcessListDataSource(tableView: tableView) { [weak self] tableView, indexPath, identity in
             let cell = tableView.dequeueReusableCell(
                 withIdentifier: ProcessRowCell.reuseIdentifier,
@@ -119,9 +132,9 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
         }
     }
 
-    // From iOS 26 the primary column floats as a glass sidebar, where grouped
-    // cards read as gray boxes on glass. Beside the detail column the rows go
-    // bare, like any sidebar; pushed full-screen they keep their cards.
+    // From iOS 26 the primary column floats as a glass sidebar, where opaque
+    // rows read as a gray slab on glass. Beside the detail column the rows go
+    // bare, like any sidebar; pushed full-screen they keep their background.
     private var usesSidebarAppearance: Bool {
         guard #available(iOS 26.0, *) else { return false }
         return splitViewController?.isCollapsed == false
@@ -133,16 +146,16 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
         let isSidebar = usesSidebarAppearance
         guard isSidebar != appliedSidebarAppearance else { return }
         appliedSidebarAppearance = isSidebar
-        tableView.backgroundColor = isSidebar ? .clear : .systemGroupedBackground
+        tableView.backgroundColor = isSidebar ? .clear : .systemBackground
         for cell in tableView.visibleCells {
             style(cell, isSidebar: isSidebar)
         }
     }
 
-    // A sidebar row has no card, and its selection is a rounded highlight
-    // rather than a gray slab from edge to edge.
+    // A sidebar row has no background, and its selection is a rounded
+    // highlight rather than a gray slab from edge to edge.
     private func style(_ cell: UITableViewCell, isSidebar: Bool) {
-        cell.backgroundColor = isSidebar ? .clear : .secondarySystemGroupedBackground
+        cell.backgroundColor = isSidebar ? .clear : .systemBackground
         guard isSidebar != (cell.selectedBackgroundView is SidebarSelectionView) else { return }
         cell.selectedBackgroundView = isSidebar ? SidebarSelectionView() : nil
     }
@@ -188,9 +201,12 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
         if let header = tableView.headerView(forSection: 0) as? ProcessListHeaderView {
             configure(header)
         }
+        renderSubtitle()
         statsButton.isEnabled = !model.rows.isEmpty
         renderLiveUpdatesItem()
-        tableView.tableFooterView = model.rows.isEmpty ? nil : creditsView
+        // A plain table ruled the empty space below the last row with
+        // separators, over the overlay too; an empty footer stops them.
+        tableView.tableFooterView = model.rows.isEmpty ? UIView() : creditsView
         renderOverlay()
     }
 
@@ -247,9 +263,23 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
         }
     }
 
+    // What the list holds, under the title: "120 processes · Paused". Blank
+    // until the first sample, which would only have said "0 processes".
+    private func renderSubtitle() {
+        let subtitle = model.rows.isEmpty ? nil : processSummary(visibleCount: model.visibleRows.count)
+        if #available(iOS 26.0, *) {
+            guard navigationItem.subtitle != subtitle else { return }
+            navigationItem.subtitle = subtitle
+        } else {
+            titleView.subtitle = subtitle
+        }
+    }
+
+    private lazy var titleView = NavigationTitleView(title: title ?? "")
+
     // Each fragment is translated on its own, then joined — a single key with
     // every optional clause baked in would be untranslatable.
-    private func processHeader(visibleCount: Int) -> String {
+    private func processSummary(visibleCount: Int) -> String {
         let total = model.rows.count
         var parts = [
             visibleCount == total
@@ -267,8 +297,8 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
 
     // MARK: Table view
 
-    // A header view of its own rather than titleForHeaderInSection, which
-    // uppercases the text on older systems and has no room for headings.
+    // The column headings, pinned over the rows. Stacked rows have no
+    // columns to head, so there the header goes; the menu still sorts.
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let identifier = ProcessListHeaderView.reuseIdentifier
         let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: identifier)
@@ -279,7 +309,7 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
     }
 
     override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        UITableView.automaticDimension
+        metrics.isStacked ? .leastNonzeroMagnitude : UITableView.automaticDimension
     }
 
     // Every row is one height for a given text size, so the table never
@@ -289,11 +319,8 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
     }
 
     private func configure(_ header: ProcessListHeaderView) {
-        header.configure(
-            summary: processHeader(visibleCount: model.visibleRows.count),
-            sortOrder: model.sortOrder,
-            metrics: metrics
-        )
+        header.configure(sortOrder: model.sortOrder, metrics: metrics)
+        header.isHidden = metrics.isStacked
         if let columnInsets {
             header.alignColumns(to: columnInsets, in: tableView)
         }
@@ -533,6 +560,57 @@ extension UIViewController {
     }
 }
 
+// The title with a subtitle line under it, as iOS 26 draws a navigation
+// item's subtitle, for the systems before it. Read as one heading.
+private final class NavigationTitleView: UIView {
+    private let titleLabel = UILabel()
+    private let subtitleLabel = UILabel()
+
+    var subtitle: String? {
+        get { subtitleLabel.text }
+        set {
+            guard newValue != subtitleLabel.text else { return }
+            subtitleLabel.text = newValue
+            subtitleLabel.isHidden = newValue == nil
+            accessibilityLabel = [titleLabel.text, newValue].compactMap { $0 }.joined(separator: ", ")
+        }
+    }
+
+    init(title: String) {
+        super.init(frame: .zero)
+        titleLabel.text = title
+        titleLabel.font = .systemFont(ofSize: 17, weight: .semibold)
+        titleLabel.textColor = .label
+        subtitleLabel.font = .systemFont(ofSize: 12)
+        subtitleLabel.textColor = .secondaryLabel
+        subtitleLabel.isHidden = true
+        for label in [titleLabel, subtitleLabel] {
+            label.textAlignment = .center
+            label.lineBreakMode = .byTruncatingTail
+        }
+        isAccessibilityElement = true
+        accessibilityTraits = .header
+        accessibilityLabel = title
+
+        let stack = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.leadingAnchor.constraint(equalTo: leadingAnchor),
+            stack.trailingAnchor.constraint(equalTo: trailingAnchor),
+            stack.centerYAnchor.constraint(equalTo: centerYAnchor),
+            stack.topAnchor.constraint(greaterThanOrEqualTo: topAnchor),
+        ])
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) is not supported")
+    }
+}
+
 private final class SidebarSelectionView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -555,7 +633,7 @@ private final class ProcessListDataSource: UITableViewDiffableDataSource<Int, Pr
     }
 }
 
-// The credit line sits under the last row, without a card behind it. Hidden
+// The credit line sits under the last row, with no row behind it. Hidden
 // while an overlay (connecting/failed/empty) owns the screen.
 private final class ProcessListCreditsView: UIView {
     private static let padding: CGFloat = 12
@@ -606,7 +684,7 @@ private final class ProcessListCreditsView: UIView {
     /// Sizes the footer to its text, and returns whether its size changed.
     /// The table puts the last section's footer gap above this view and
     /// nothing below it, so the same gap goes under the credits to keep them
-    /// centred between the last card and the end of the list.
+    /// centred between the last row and the end of the list.
     func fit(width: CGFloat, sectionGap: CGFloat) -> Bool {
         let contentSize = traitCollection.preferredContentSizeCategory
         guard width > 0,
