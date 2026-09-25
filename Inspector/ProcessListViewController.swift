@@ -85,6 +85,22 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
         applySidebarAppearance()
     }
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        fitCreditsView()
+    }
+
+    // The table only reads a footer's height when the footer is set, so a
+    // footer that grew or shrank is set again.
+    private func fitCreditsView() {
+        guard tableView.tableFooterView === creditsView else { return }
+        let lastSection = tableView.numberOfSections - 1
+        let sectionGap = lastSection < 0 ? 0 : tableView.rectForFooter(inSection: lastSection).height
+        if creditsView.fit(width: tableView.bounds.width, sectionGap: sectionGap) {
+            tableView.tableFooterView = creditsView
+        }
+    }
+
     // From iOS 26 the primary column floats as a glass sidebar, where grouped
     // cards read as gray boxes on glass. Beside the detail column the rows go
     // bare, like any sidebar; pushed full-screen they keep their cards.
@@ -455,8 +471,14 @@ private final class ProcessListDataSource: UITableViewDiffableDataSource<Int, Pr
 // The credit line sits under the last row, without a card behind it. Hidden
 // while an overlay (connecting/failed/empty) owns the screen.
 private final class ProcessListCreditsView: UIView {
+    private static let padding: CGFloat = 12
+    private var bottomPadding: NSLayoutConstraint!
+    private var fittedWidth: CGFloat?
+    private var fittedSectionGap: CGFloat?
+    private var fittedContentSize: UIContentSizeCategory?
+
     init() {
-        super.init(frame: CGRect(x: 0, y: 0, width: 0, height: 64))
+        super.init(frame: .zero)
         let credit = UIButton(type: .system)
         credit.setTitle(String(localized: "Made with ❤️ by OwnGoal Studio"), for: .normal)
         credit.setTitleColor(.label, for: .normal)
@@ -480,15 +502,51 @@ private final class ProcessListCreditsView: UIView {
         stack.alpha = 0.5
         stack.translatesAutoresizingMaskIntoConstraints = false
         addSubview(stack)
+        bottomPadding = bottomAnchor.constraint(equalTo: stack.bottomAnchor, constant: Self.padding)
         NSLayoutConstraint.activate([
             stack.centerXAnchor.constraint(equalTo: centerXAnchor),
-            stack.centerYAnchor.constraint(equalTo: centerYAnchor),
+            stack.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: Self.padding),
+            stack.topAnchor.constraint(equalTo: topAnchor, constant: Self.padding),
+            bottomPadding,
         ])
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) is not supported")
+    }
+
+    /// Sizes the footer to its text, and returns whether its size changed.
+    /// The table puts the last section's footer gap above this view and
+    /// nothing below it, so the same gap goes under the credits to keep them
+    /// centred between the last card and the end of the list.
+    func fit(width: CGFloat, sectionGap: CGFloat) -> Bool {
+        let contentSize = traitCollection.preferredContentSizeCategory
+        guard width > 0,
+              width != fittedWidth || sectionGap != fittedSectionGap || contentSize != fittedContentSize
+        else { return false }
+        fittedWidth = width
+        fittedSectionGap = sectionGap
+        fittedContentSize = contentSize
+
+        bottomPadding.constant = Self.padding + sectionGap
+        let height = systemLayoutSizeFitting(
+            CGSize(width: width, height: UIView.layoutFittingCompressedSize.height),
+            withHorizontalFittingPriority: .required,
+            verticalFittingPriority: .fittingSizeLevel
+        ).height
+        guard height != frame.height || width != frame.width else { return false }
+        frame.size = CGSize(width: width, height: height)
+        return true
+    }
+
+    // The fonts follow Dynamic Type on their own; the table has to be told
+    // that the footer needs measuring again.
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if traitCollection.preferredContentSizeCategory != previousTraitCollection?.preferredContentSizeCategory {
+            superview?.setNeedsLayout()
+        }
     }
 
     @objc private func openWebsite() {
