@@ -418,6 +418,16 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
                     }
                 }
             ),
+            InspectorMenuItem(
+                title: String(localized: "Refresh Interval"),
+                value: model.refreshInterval.label,
+                symbolName: "timer",
+                children: ProcessRefreshInterval.allCases.map { interval in
+                    InspectorMenuItem(title: interval.label, isOn: interval == model.refreshInterval) {
+                        model.refreshInterval = interval
+                    }
+                }
+            ),
         ]
     }
 }
