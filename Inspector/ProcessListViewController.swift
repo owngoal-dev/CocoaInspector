@@ -34,7 +34,10 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
 
     init(model: ProcessListModel) {
         self.model = model
-        super.init(style: .insetGrouped)
+        // A plain table runs the rows from edge to edge, and its section
+        // header stays pinned while they scroll, so the column headings stay
+        // in sight over whatever is below them.
+        super.init(style: .plain)
     }
 
     @available(*, unavailable)
@@ -64,6 +67,11 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
         clearsSelectionOnViewWillAppear = false
         tableView.register(ProcessRowCell.self, forCellReuseIdentifier: ProcessRowCell.reuseIdentifier)
         tableView.estimatedRowHeight = metrics.rowHeight
+        // From iOS 15 a plain table pads above every section header; the
+        // headings sit straight under the search bar instead.
+        if #available(iOS 15.0, *) {
+            tableView.sectionHeaderTopPadding = 0
+        }
         dataSource = ProcessListDataSource(tableView: tableView) { [weak self] tableView, indexPath, identity in
             let cell = tableView.dequeueReusableCell(
                 withIdentifier: ProcessRowCell.reuseIdentifier,
@@ -119,9 +127,9 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
         }
     }
 
-    // From iOS 26 the primary column floats as a glass sidebar, where grouped
-    // cards read as gray boxes on glass. Beside the detail column the rows go
-    // bare, like any sidebar; pushed full-screen they keep their cards.
+    // From iOS 26 the primary column floats as a glass sidebar, where opaque
+    // rows read as a gray slab on glass. Beside the detail column the rows go
+    // bare, like any sidebar; pushed full-screen they keep their background.
     private var usesSidebarAppearance: Bool {
         guard #available(iOS 26.0, *) else { return false }
         return splitViewController?.isCollapsed == false
@@ -133,16 +141,16 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
         let isSidebar = usesSidebarAppearance
         guard isSidebar != appliedSidebarAppearance else { return }
         appliedSidebarAppearance = isSidebar
-        tableView.backgroundColor = isSidebar ? .clear : .systemGroupedBackground
+        tableView.backgroundColor = isSidebar ? .clear : .systemBackground
         for cell in tableView.visibleCells {
             style(cell, isSidebar: isSidebar)
         }
     }
 
-    // A sidebar row has no card, and its selection is a rounded highlight
-    // rather than a gray slab from edge to edge.
+    // A sidebar row has no background, and its selection is a rounded
+    // highlight rather than a gray slab from edge to edge.
     private func style(_ cell: UITableViewCell, isSidebar: Bool) {
-        cell.backgroundColor = isSidebar ? .clear : .secondarySystemGroupedBackground
+        cell.backgroundColor = isSidebar ? .clear : .systemBackground
         guard isSidebar != (cell.selectedBackgroundView is SidebarSelectionView) else { return }
         cell.selectedBackgroundView = isSidebar ? SidebarSelectionView() : nil
     }
@@ -190,7 +198,9 @@ final class ProcessListViewController: UITableViewController, UISearchResultsUpd
         }
         statsButton.isEnabled = !model.rows.isEmpty
         renderLiveUpdatesItem()
-        tableView.tableFooterView = model.rows.isEmpty ? nil : creditsView
+        // A plain table ruled the empty space below the last row with
+        // separators, over the overlay too; an empty footer stops them.
+        tableView.tableFooterView = model.rows.isEmpty ? UIView() : creditsView
         renderOverlay()
     }
 
@@ -555,7 +565,7 @@ private final class ProcessListDataSource: UITableViewDiffableDataSource<Int, Pr
     }
 }
 
-// The credit line sits under the last row, without a card behind it. Hidden
+// The credit line sits under the last row, with no row behind it. Hidden
 // while an overlay (connecting/failed/empty) owns the screen.
 private final class ProcessListCreditsView: UIView {
     private static let padding: CGFloat = 12
@@ -606,7 +616,7 @@ private final class ProcessListCreditsView: UIView {
     /// Sizes the footer to its text, and returns whether its size changed.
     /// The table puts the last section's footer gap above this view and
     /// nothing below it, so the same gap goes under the credits to keep them
-    /// centred between the last card and the end of the list.
+    /// centred between the last row and the end of the list.
     func fit(width: CGFloat, sectionGap: CGFloat) -> Bool {
         let contentSize = traitCollection.preferredContentSizeCategory
         guard width > 0,
